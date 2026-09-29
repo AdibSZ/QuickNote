@@ -1,10 +1,6 @@
 # ⚡ QuickNote
 
 <p align="center">
-  <img src="docs/screenshots/directory.png" alt="QuickNote Directory View" width="85%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.12);" />
-</p>
-
-<p align="center">
   <strong>Hyper-fast, offline-first note-taking app inspired by Apple VisionOS & macOS design language.</strong><br>
   Built with Flutter, BLoC/Cubit, Pure Dart Core, and Clean Architecture in a Melos monorepo.
 </p>
@@ -30,10 +26,6 @@
 - 📤 **Rich Export & Sharing:** Export modal with reading stats (word count, char count, estimated read time) and 1-tap copy as Markdown or Plain Text.
 - 🌐 **Dynamic RTL & Luxury Typography:** Features **Plus Jakarta Sans** for English chrome, **JetBrains Mono** for code blocks, and automatic **Vazirmatn** fallback with per-block RTL detection for Persian/Arabic text.
 - 🔒 **100% Offline-First:** Ultra-fast in-memory persistence with zero latency disk synchronization.
-
-<p align="center">
-  <img src="docs/screenshots/editor.png" alt="QuickNote Editor View" width="85%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.12);" />
-</p>
 
 ---
 
@@ -125,8 +117,7 @@ QuickNote/
 ---
 
 ### 👨‍💻 توسعه‌دهنده (Author)
-توسعه‌یافته توسط **[ادیب شامل‌زاده (AdibSZ)](https://github.com/AdibSZ)**  
-ایمیل: adibshamilzadeh@gmail.com
+توسعه‌یافته توسط **[AdibSZ](https://github.com/AdibSZ)**
 
 ---
 
