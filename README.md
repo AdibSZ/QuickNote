@@ -19,7 +19,7 @@
 
 ---
 
-## ✨ Features
+## Features
 
 - 🍏 **Apple VisionOS & Sequoia Aesthetic:** Pristine neutral canvas, frosted glass containers (`BackdropFilter`), specular hairline borders, and fluid 60fps micro-animations.
 - 📝 **Dynamic Block-Based Editor:** Reorderable blocks with smooth spring entry animations.
@@ -34,7 +34,7 @@
 
 ---
 
-## 📱 UI Showcase
+## UI Showcase
 
 ### Responsive Mobile Experience (Dark & Light)
 <p align="center">
@@ -54,9 +54,9 @@
 
 ---
 
-## 🏛️ Architecture & Monorepo Structure
+## Architecture
 
-QuickNote strictly follows Clean Architecture and package boundary isolation:
+QuickNote strictly follows Clean Architecture and Melos monorepo package boundary isolation:
 
 ```
 QuickNote/
@@ -79,7 +79,7 @@ QuickNote/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - [Flutter SDK](https://docs.flutter.dev/get-started/install) (>= 3.13.2)
@@ -116,14 +116,14 @@ QuickNote/
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 Developed by **[AdibSZ](https://github.com/AdibSZ)**  
 📧 Email: [adibshamilzadeh@gmail.com](mailto:adibshamilzadeh@gmail.com)
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
@@ -131,12 +131,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div dir="rtl">
 
-## 🇮🇷 راهنمای فارسی (Persian Documentation)
+## راهنمای فارسی
 
 ### معرفی پروژه
 **QuickNote** یک اپلیکیشن یادداشت‌برداری مدرن، فوق‌سریع و کاملاً آفلاین است که با الهام از زبان طراحی **Apple VisionOS** و **macOS Sequoia** پیاده‌سازی شده است. این پروژه با بهره‌گیری از **Flutter**، معماری چندپکیجی **Melos Monorepo** و کیوبیت‌های کاملاً مستقل (Pure Dart BLoC) توسعه یافته است.
 
-### 🌟 قابلیت‌های کلیدی
+### قابلیت‌های کلیدی
 - **طراحی شیشه‌ای لوکس (Glassmorphism):** بوم خنثی و تمیز با کارت‌های شیشه‌ای مات، افکت بازتاب نور در حاشیه‌ها، و انیمیشن‌های نرم ۶۰ فریم بر ثانیه.
 - **ویرایشگر بلاک‌محور با تبدیل خودکار مارک‌داون:** تبدیل بلادرنگ `# ` به عنوان، `- ` به چک‌لیست و ` ``` ` به بلاک کد به همراه بازخورد لمسی (Haptic).
 - **ضبط و پخش صدا شبیه Apple Voice Memos:** ضبط مستقیم با فرمت وب Opus/WebM و ویژوالایزر امواج صوتی هارمونیک و پیوسته.
@@ -146,7 +146,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **تایپوگرافی هوشمند دوجهته:** فونت لوکس **Plus Jakarta Sans** برای پوسته انگلیسی، **JetBrains Mono** برای کدها، و فونت زیبای **وزیرمتن (Vazirmatn)** با تشخیص خودکار جهت متن راست‌به‌چپ (RTL) برای یادداشت‌های فارسی.
 - **اشتراک‌گذاری پیشرفته:** کپی سریع با فرمت استاندارد مارک‌داون یا متن ساده (Plain Text).
 
-### 🛠️ ساختار مهندسی و معماری
+### ساختار مهندسی و معماری
 پروژه بر اساس تفکیک کامل لایه‌ها طراحی شده است:
 1. **`packages/core/*` و `packages/features/*`:** پکیج‌های دامنه، مدل‌ها و کیوبیت‌ها که **۱۰۰٪ Pure Dart** هستند و هیچ‌گونه وابستگی به فلاتر ندارند.
 2. **`apps/quicknote`:** لایه نمایش، ویجت‌های Passive BLoC، و کیت بصری شیشه‌ای.
@@ -154,12 +154,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-### 👨‍💻 توسعه‌دهنده (Author)
+### توسعه‌دهنده (Author)
 توسعه‌یافته توسط **[AdibSZ](https://github.com/AdibSZ)**  
 📧 ایمیل: [adibshamilzadeh@gmail.com](mailto:adibshamilzadeh@gmail.com)
 
 ---
 
-### 📄 مجوز (License)
+### مجوز (License)
 این پروژه تحت مجوز MIT منتشر شده است.
 </div>
