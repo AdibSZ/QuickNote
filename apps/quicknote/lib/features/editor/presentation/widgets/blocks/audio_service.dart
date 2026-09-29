@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:audioplayers/audioplayers.dart';
 
@@ -48,7 +49,9 @@ class AudioService {
   Future<bool> startRecording() async {
     try {
       _recorder ??= AudioRecorder();
-      if (!await _recorder!.hasPermission()) {
+      final hasPerm = await _recorder!.hasPermission();
+      if (!hasPerm) {
+        debugPrint('AudioService: microphone permission denied');
         return false;
       }
 
@@ -56,10 +59,17 @@ class AudioService {
         await stopPlayback();
       }
 
+      String recordPath = '';
+      if (!kIsWeb) {
+        final tempDir = await getTemporaryDirectory();
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        recordPath = '${tempDir.path}/quicknote_memo_$timestamp.m4a';
+      }
+
       final config = RecordConfig(
         encoder: kIsWeb ? AudioEncoder.opus : AudioEncoder.aacLc,
       );
-      await _recorder!.start(config, path: '');
+      await _recorder!.start(config, path: recordPath);
 
       _isRecording = true;
       onRecordStateChanged?.call(true);
@@ -74,9 +84,9 @@ class AudioService {
       return true;
     } catch (e) {
       debugPrint('AudioService startRecording error: $e');
-      _isRecording = true;
-      onRecordStateChanged?.call(true);
-      return true; // Fallback to simulated visual recording
+      _isRecording = false;
+      onRecordStateChanged?.call(false);
+      return false;
     }
   }
 

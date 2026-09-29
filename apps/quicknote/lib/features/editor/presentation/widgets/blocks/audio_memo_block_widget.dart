@@ -118,6 +118,17 @@ class _AudioMemoBlockWidgetState extends State<AudioMemoBlockWidget> {
       if (_isPlaying) {
         await _audioService.stopPlayback();
       }
+      final started = await _audioService.startRecording();
+      if (!mounted) return;
+      if (!started) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Microphone permission required for voice notes'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
       setState(() {
         _isRecording = true;
         _recordSeconds = 0;
@@ -127,7 +138,6 @@ class _AudioMemoBlockWidgetState extends State<AudioMemoBlockWidget> {
         if (!mounted) return;
         setState(() => _recordSeconds++);
       });
-      await _audioService.startRecording();
     }
   }
 

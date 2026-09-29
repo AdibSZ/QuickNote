@@ -21,6 +21,7 @@ dependencies:
     path: ../../packages/features/quicknote_notes
   record: ^7.1.1
   audioplayers: ^6.8.1
+  path_provider: ^2.1.6
 
 dev_dependencies:
   flutter_test:
