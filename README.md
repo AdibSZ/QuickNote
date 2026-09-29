@@ -36,13 +36,15 @@
 
 ## 📱 UI Showcase
 
-### Responsive Mobile Experience
+### Responsive Mobile Experience (Dark & Light)
 <p align="center">
-  <img src="docs/screenshots/mobile_directory.png" width="31%" alt="Mobile Notes Directory" />
+  <img src="docs/screenshots/mobile_directory_dark.png" width="23%" alt="Directory Dark Mode" />
   &nbsp;
-  <img src="docs/screenshots/mobile_editor_dark.png" width="31%" alt="Mobile Editor Dark Mode" />
+  <img src="docs/screenshots/mobile_editor_dark.png" width="23%" alt="Editor Dark Mode" />
   &nbsp;
-  <img src="docs/screenshots/mobile_editor_light.png" width="31%" alt="Mobile Editor Light Mode" />
+  <img src="docs/screenshots/mobile_directory_light.png" width="23%" alt="Directory Light Mode" />
+  &nbsp;
+  <img src="docs/screenshots/mobile_editor_light.png" width="23%" alt="Editor Light Mode" />
 </p>
 
 ### Warm Alabaster Light Mode (Desktop & Tablet)
@@ -114,6 +116,19 @@ QuickNote/
 
 ---
 
+## 👨‍💻 Author
+
+Developed by **[AdibSZ](https://github.com/AdibSZ)**  
+📧 Email: [adibshamilzadeh@gmail.com](mailto:adibshamilzadeh@gmail.com)
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
 <div dir="rtl">
 
 ## 🇮🇷 راهنمای فارسی (Persian Documentation)
@@ -140,7 +155,8 @@ QuickNote/
 ---
 
 ### 👨‍💻 توسعه‌دهنده (Author)
-توسعه‌یافته توسط **[AdibSZ](https://github.com/AdibSZ)**
+توسعه‌یافته توسط **[AdibSZ](https://github.com/AdibSZ)**  
+📧 ایمیل: [adibshamilzadeh@gmail.com](mailto:adibshamilzadeh@gmail.com)
 
 ---
 
