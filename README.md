@@ -1,12 +1,17 @@
 # ⚡ QuickNote
 
 <p align="center">
-  <strong>Hyper-fast, offline-first note-taking app inspired by Apple VisionOS & macOS design language.</strong><br>
+  <img src="docs/screenshots/desktop_dark.png" alt="QuickNote Desktop Dark Experience" width="95%" style="border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.25);" />
+</p>
+
+<p align="center">
+  <strong>Hyper-fast, offline-first digital note-taking application inspired by Apple VisionOS & macOS Sequoia design language.</strong><br>
   Built with Flutter, BLoC/Cubit, Pure Dart Core, and Clean Architecture in a Melos monorepo.
 </p>
 
 <p align="center">
   <a href="#features">Features</a> •
+  <a href="#ui-showcase">UI Showcase</a> •
   <a href="#architecture">Architecture</a> •
   <a href="#getting-started">Getting Started</a> •
   <a href="#راهنمای-فارسی">راهنمای فارسی</a>
@@ -17,7 +22,7 @@
 ## ✨ Features
 
 - 🍏 **Apple VisionOS & Sequoia Aesthetic:** Pristine neutral canvas, frosted glass containers (`BackdropFilter`), specular hairline borders, and fluid 60fps micro-animations.
-- 📝 **Block-Based Note Editor:** Reorderable blocks with smooth spring entry animations.
+- 📝 **Dynamic Block-Based Editor:** Reorderable blocks with smooth spring entry animations.
 - ⚡ **Markdown Auto-Transformations:** Typing `# `, `## `, `- `, `[] `, or ` ``` ` automatically transforms paragraph blocks into Headings, Checklists, or Code Blocks with haptic feedback.
 - 🎙️ **Apple Voice Memos Visualizer:** Live mic recording with Opus/WebM audio encoding and a 60fps harmonic waveform visualizer featuring a parabolic envelope.
 - 📌 **Smart Note Organization:** Automatic partitioning between **PINNED** and **NOTES**, tag filtering chips, and dynamic pastel category accents.
@@ -25,7 +30,25 @@
 - 🔍 **⌘K Spotlight Search & Multi-Sort:** Lightning-fast full-text search with instant sorting by Date Modified, Date Created, or Alphabetical (A-Z).
 - 📤 **Rich Export & Sharing:** Export modal with reading stats (word count, char count, estimated read time) and 1-tap copy as Markdown or Plain Text.
 - 🌐 **Dynamic RTL & Luxury Typography:** Features **Plus Jakarta Sans** for English chrome, **JetBrains Mono** for code blocks, and automatic **Vazirmatn** fallback with per-block RTL detection for Persian/Arabic text.
-- 🔒 **100% Offline-First:** Ultra-fast in-memory persistence with zero latency disk synchronization.
+- 🔒 **100% Offline-First:** Ultra-fast in-memory persistence with zero-latency disk synchronization.
+
+---
+
+## 📱 UI Showcase
+
+### Responsive Mobile Experience
+<p align="center">
+  <img src="docs/screenshots/mobile_directory.png" width="31%" alt="Mobile Notes Directory" />
+  &nbsp;
+  <img src="docs/screenshots/mobile_editor_dark.png" width="31%" alt="Mobile Editor Dark Mode" />
+  &nbsp;
+  <img src="docs/screenshots/mobile_editor_light.png" width="31%" alt="Mobile Editor Light Mode" />
+</p>
+
+### Warm Alabaster Light Mode (Desktop & Tablet)
+<p align="center">
+  <img src="docs/screenshots/desktop_light.png" alt="QuickNote Desktop Light Mode" width="95%" style="border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.08);" />
+</p>
 
 ---
 
@@ -36,7 +59,7 @@ QuickNote strictly follows Clean Architecture and package boundary isolation:
 ```
 QuickNote/
 ├── apps/
-│   └── quicknote/               # Flutter Presentation & UI Kit Layer
+│   └── quicknote/               # Flutter Presentation & Apple Glass UI Kit
 │       ├── lib/
 │       │   ├── core/            # Theme, Apple Glass UI Kit, Typography
 │       │   └── features/        # Editor, Directory, Settings, Responsive
@@ -98,7 +121,7 @@ QuickNote/
 ### معرفی پروژه
 **QuickNote** یک اپلیکیشن یادداشت‌برداری مدرن، فوق‌سریع و کاملاً آفلاین است که با الهام از زبان طراحی **Apple VisionOS** و **macOS Sequoia** پیاده‌سازی شده است. این پروژه با بهره‌گیری از **Flutter**، معماری چندپکیجی **Melos Monorepo** و کیوبیت‌های کاملاً مستقل (Pure Dart BLoC) توسعه یافته است.
 
-### 🌟 قابلیت‌های برجسته
+### 🌟 قابلیت‌های کلیدی
 - **طراحی شیشه‌ای لوکس (Glassmorphism):** بوم خنثی و تمیز با کارت‌های شیشه‌ای مات، افکت بازتاب نور در حاشیه‌ها، و انیمیشن‌های نرم ۶۰ فریم بر ثانیه.
 - **ویرایشگر بلاک‌محور با تبدیل خودکار مارک‌داون:** تبدیل بلادرنگ `# ` به عنوان، `- ` به چک‌لیست و ` ``` ` به بلاک کد به همراه بازخورد لمسی (Haptic).
 - **ضبط و پخش صدا شبیه Apple Voice Memos:** ضبط مستقیم با فرمت وب Opus/WebM و ویژوالایزر امواج صوتی هارمونیک و پیوسته.
@@ -112,7 +135,7 @@ QuickNote/
 پروژه بر اساس تفکیک کامل لایه‌ها طراحی شده است:
 1. **`packages/core/*` و `packages/features/*`:** پکیج‌های دامنه، مدل‌ها و کیوبیت‌ها که **۱۰۰٪ Pure Dart** هستند و هیچ‌گونه وابستگی به فلاتر ندارند.
 2. **`apps/quicknote`:** لایه نمایش، ویجت‌های Passive BLoC، و کیت بصری شیشه‌ای.
-3. **قانون ۳۰۰ سطر:** تمامی فایل‌های کد منبع برای خوانایی بالا و رعایت اصل Single Responsibility کمتر از ۳۰۰ سطر نگهداری شده‌اند.
+3. **قانون ۳۰۰ سقف سطر:** تمامی فایل‌های کد منبع برای خوانایی بالا و رعایت اصل Single Responsibility کمتر از ۳۰۰ سطر نگهداری شده‌اند.
 
 ---
 
