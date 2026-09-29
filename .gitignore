@@ -41,3 +41,6 @@ android/**/gradle-wrapper.jar
 
 # Windows related
 apps/quicknote/windows/flutter/ephemeral/
+
+# Binaries
+*.apk
