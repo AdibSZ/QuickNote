@@ -100,6 +100,23 @@ class _ParagraphBlockWidgetState extends State<ParagraphBlockWidget> {
         widget.onTransform!(BlockType.checklist, taskText, {'isChecked': false});
         return;
       }
+      if (value.startsWith('> ')) {
+        final quoteText = value.substring(2);
+        TactileFeedback.medium();
+        widget.onTransform!(BlockType.quote, quoteText, {});
+        return;
+      }
+      if (value.startsWith('! ') || value.startsWith('💡 ')) {
+        final calloutText = value.startsWith('💡 ') ? value.substring(3) : value.substring(2);
+        TactileFeedback.medium();
+        widget.onTransform!(BlockType.callout, calloutText, {'icon': '💡', 'tint': 'amber'});
+        return;
+      }
+      if (value.startsWith('---') || value.startsWith('***')) {
+        TactileFeedback.medium();
+        widget.onTransform!(BlockType.divider, '', {});
+        return;
+      }
       if (value.startsWith('```')) {
         final codeText = value.length > 3 ? value.substring(3).trimLeft() : '';
         TactileFeedback.medium();

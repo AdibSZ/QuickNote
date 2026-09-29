@@ -5,20 +5,26 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/text_direction_helper.dart';
 import '../../../../core/ui_kit/glass_card.dart';
 
+import '../../../editor/presentation/widgets/note_color_picker_modal.dart';
+
 class NoteCardWidget extends StatelessWidget {
   final Note note;
   final VoidCallback onTap;
   final VoidCallback onTogglePin;
+  final VoidCallback? onToggleFavorite;
   final VoidCallback onDelete;
   final VoidCallback? onDuplicate;
+  final ValueChanged<String?>? onColorSelected;
 
   const NoteCardWidget({
     super.key,
     required this.note,
     required this.onTap,
     required this.onTogglePin,
+    this.onToggleFavorite,
     required this.onDelete,
     this.onDuplicate,
+    this.onColorSelected,
   });
 
   Color _colorForCategory(String cat, bool isDark) {
@@ -54,11 +60,17 @@ class NoteCardWidget extends StatelessWidget {
     final showCategory = note.category.isNotEmpty && note.category != 'General';
     final catColor = _colorForCategory(note.category, isDark);
 
+    final noteAccent = note.color != null
+        ? NoteColorPickerModal.getAccentColor(note.color, isDark)
+        : null;
+
     return GlassCard(
       onTap: onTap,
       onLongPress: () => _showContextMenu(context),
       padding: const EdgeInsets.all(14),
       borderRadius: BorderRadius.circular(16),
+      borderColor: noteAccent?.withValues(alpha: isDark ? 0.45 : 0.35),
+      customBackground: noteAccent?.withValues(alpha: isDark ? 0.08 : 0.05),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -78,6 +90,16 @@ class NoteCardWidget extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.only(right: 6),
                             child: Icon(Icons.push_pin, size: 14, color: primary),
+                          ),
+                        if (note.isFavorite)
+                          const Padding(
+                            padding: EdgeInsets.only(right: 6),
+                            child: Icon(Icons.star_rounded, size: 16, color: Color(0xFFFFCC00)),
+                          ),
+                        if (note.isLocked)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: Icon(Icons.lock_outline, size: 13, color: onSurfaceVar),
                           ),
                         if (showCategory)
                           Container(
@@ -117,12 +139,18 @@ class NoteCardWidget extends StatelessWidget {
                 const SizedBox(height: 5),
                 Expanded(
                   child: Text(
-                    note.preview.isEmpty ? 'Empty note...' : note.preview,
+                    note.isLocked
+                        ? '🔒 Private Note'
+                        : (note.preview.isEmpty ? 'Empty note...' : note.preview),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     textDirection: getTextDirection(note.preview, defaultIfEmpty: true),
                     textAlign: getTextAlign(note.preview, defaultIfEmpty: true),
-                    style: AppTypography.body(onSurfaceVar.withValues(alpha: 0.8), size: 12),
+                    style: AppTypography.body(
+                      note.isLocked ? onSurfaceVar.withValues(alpha: 0.5) : onSurfaceVar.withValues(alpha: 0.8),
+                      size: 12,
+                      fontStyle: note.isLocked ? FontStyle.italic : FontStyle.normal,
+                    ),
                   ),
                 ),
               ],
@@ -154,20 +182,10 @@ class NoteCardWidget extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (hasCode) ...[
-                      Icon(Icons.code, size: 13, color: outline),
-                      const SizedBox(width: 4),
-                    ],
-                    if (hasAudio) ...[
-                      Icon(Icons.mic, size: 13, color: outline),
-                      const SizedBox(width: 4),
-                    ],
-                    if (hasChecklist) ...[
-                      Icon(Icons.check_box_outlined, size: 13, color: outline),
-                      const SizedBox(width: 4),
-                    ],
-                    if (!hasCode && !hasAudio && !hasChecklist)
-                      Icon(Icons.notes, size: 13, color: outline),
+                    if (hasCode) const Padding(padding: EdgeInsets.only(right: 4), child: Icon(Icons.code, size: 13)),
+                    if (hasAudio) const Padding(padding: EdgeInsets.only(right: 4), child: Icon(Icons.mic, size: 13)),
+                    if (hasChecklist) const Padding(padding: EdgeInsets.only(right: 4), child: Icon(Icons.check_box_outlined, size: 13)),
+                    if (!hasCode && !hasAudio && !hasChecklist) Icon(Icons.notes, size: 13, color: outline),
                   ],
                 ),
                 _buildMetaStats(isDark, outline),
@@ -185,24 +203,12 @@ class NoteCardWidget extends StatelessWidget {
       final done = checklist.where((b) => b.metadata['isChecked'] == true).length;
       final isAllDone = done == checklist.length;
       final doneColor = isDark ? const Color(0xFF30D158) : const Color(0xFF1E8E3E);
-      return Text(
-        '$done/${checklist.length} done',
-        style: AppTypography.caption(
-          isAllDone ? doneColor : outline,
-          size: 10,
-          weight: isAllDone ? FontWeight.w600 : FontWeight.w500,
-        ),
-      );
+      return Text('$done/${checklist.length} done',
+          style: AppTypography.caption(isAllDone ? doneColor : outline, size: 10, weight: isAllDone ? FontWeight.w600 : FontWeight.w500));
     }
     final words = note.wordCount;
-    if (words > 0) {
-      return Text(
-        '$words ${words == 1 ? "word" : "words"}',
-        style: AppTypography.caption(outline, size: 10),
-      );
-    }
     return Text(
-      '${note.blocks.length} ${note.blocks.length == 1 ? "block" : "blocks"}',
+      words > 0 ? '$words ${words == 1 ? "word" : "words"}' : '${note.blocks.length} ${note.blocks.length == 1 ? "block" : "blocks"}',
       style: AppTypography.caption(outline, size: 10),
     );
   }
@@ -218,42 +224,38 @@ class NoteCardWidget extends StatelessWidget {
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkSurfaceContainerHighest : AppColors.lightSurfaceContainerHighest,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isDark ? AppColors.darkHairlineBorder : AppColors.lightHairlineBorder,
-              width: 0.5,
-            ),
+            border: Border.all(color: isDark ? AppColors.darkHairlineBorder : AppColors.lightHairlineBorder, width: 0.5),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ListTile(
-                leading: Icon(note.isPinned ? Icons.push_pin_outlined : Icons.push_pin),
-                title: Text(note.isPinned ? 'Unpin' : 'Pin to Top'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  onTogglePin();
-                },
-              ),
+              _tile(ctx, note.isPinned ? Icons.push_pin_outlined : Icons.push_pin, note.isPinned ? 'Unpin' : 'Pin to Top', onTogglePin),
+              if (onToggleFavorite != null)
+                _tile(ctx, note.isFavorite ? Icons.star_border_rounded : Icons.star_rounded,
+                    note.isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onToggleFavorite!,
+                    color: const Color(0xFFFFCC00)),
+              if (onColorSelected != null)
+                _tile(ctx, Icons.palette_outlined, 'Note Tint Theme', () {
+                  NoteColorPickerModal.show(context, currentColor: note.color, onColorSelected: onColorSelected!);
+                }),
               if (onDuplicate != null)
-                ListTile(
-                  leading: const Icon(Icons.copy_outlined),
-                  title: const Text('Duplicate Note'),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    onDuplicate!();
-                  },
-                ),
-              ListTile(
-                leading: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                title: const Text('Delete Note', style: TextStyle(color: Colors.redAccent)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  onDelete();
-                },
-              ),
+                _tile(ctx, Icons.copy_outlined, 'Duplicate Note', onDuplicate!),
+              _tile(ctx, Icons.delete_outline, 'Move to Trash', onDelete, color: Colors.redAccent),
             ],
           ),
         );
+      },
+    );
+  }
+
+  Widget _tile(BuildContext ctx, IconData icon, String title, VoidCallback onTap, {Color? color}) {
+    return ListTile(
+      dense: true,
+      leading: Icon(icon, color: color, size: 20),
+      title: Text(title, style: color != null ? TextStyle(color: color) : null),
+      onTap: () {
+        Navigator.pop(ctx);
+        onTap();
       },
     );
   }

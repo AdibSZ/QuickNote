@@ -30,24 +30,33 @@ class NotesDirectoryState extends Equatable {
 
   List<Note> get filteredNotes {
     final result = allNotes.where((note) {
-      if (activeTab == DirectoryTab.tags) {
-        // When in Tags tab, filter by selectedTag across all notes
-        if (selectedTag != null && !note.tags.any((t) => t.toLowerCase() == selectedTag!.toLowerCase())) {
-          return false;
-        }
+      // Trash filter
+      if (selectedCategory == 'Trash') {
+        if (!note.isDeleted) return false;
       } else {
-        // Category filter in All Notes tab
-        if (selectedCategory == 'Pinned' && !note.isPinned) {
-          return false;
-        } else if (selectedCategory != 'All' &&
-            selectedCategory != 'Pinned' &&
-            note.category.toLowerCase() != selectedCategory.toLowerCase()) {
-          return false;
-        }
+        if (note.isDeleted) return false;
 
-        // Tag filter
-        if (selectedTag != null && !note.tags.any((t) => t.toLowerCase() == selectedTag!.toLowerCase())) {
-          return false;
+        if (activeTab == DirectoryTab.tags) {
+          if (selectedTag != null &&
+              !note.tags.any((t) => t.toLowerCase() == selectedTag!.toLowerCase())) {
+            return false;
+          }
+        } else {
+          if (selectedCategory == 'Pinned' && !note.isPinned) {
+            return false;
+          } else if (selectedCategory == 'Favorites' && !note.isFavorite) {
+            return false;
+          } else if (selectedCategory != 'All' &&
+              selectedCategory != 'Pinned' &&
+              selectedCategory != 'Favorites' &&
+              note.category.toLowerCase() != selectedCategory.toLowerCase()) {
+            return false;
+          }
+
+          if (selectedTag != null &&
+              !note.tags.any((t) => t.toLowerCase() == selectedTag!.toLowerCase())) {
+            return false;
+          }
         }
       }
 
@@ -82,9 +91,9 @@ class NotesDirectoryState extends Equatable {
   }
 
   Set<String> get availableCategories {
-    final cats = <String>{'All', 'Pinned'};
+    final cats = <String>{'All', 'Pinned', 'Favorites'};
     for (final note in allNotes) {
-      if (note.category.trim().isNotEmpty) {
+      if (!note.isDeleted && note.category.trim().isNotEmpty) {
         cats.add(note.category.trim());
       }
     }
@@ -94,10 +103,17 @@ class NotesDirectoryState extends Equatable {
   Set<String> get availableTags {
     final tags = <String>{};
     for (final note in allNotes) {
-      tags.addAll(note.tags);
+      if (!note.isDeleted) {
+        tags.addAll(note.tags);
+      }
     }
     return tags;
   }
+
+  int get allCount => allNotes.where((n) => !n.isDeleted).length;
+  int get pinnedCount => allNotes.where((n) => !n.isDeleted && n.isPinned).length;
+  int get favoritesCount => allNotes.where((n) => !n.isDeleted && n.isFavorite).length;
+  int get trashCount => allNotes.where((n) => n.isDeleted).length;
 
   NotesDirectoryState copyWith({
     List<Note>? allNotes,

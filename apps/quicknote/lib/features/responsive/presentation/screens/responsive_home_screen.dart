@@ -7,6 +7,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/ui_kit/app_emblem.dart';
 import '../../../../core/ui_kit/glass_container.dart';
 import '../../../directory/presentation/screens/notes_directory_screen.dart';
+import '../../../directory/presentation/widgets/spotlight_search_modal.dart';
 import '../../../editor/presentation/screens/note_editor_screen.dart';
 import '../../../settings/presentation/settings_modal.dart';
 import '../widgets/sidebar_item.dart';
@@ -31,6 +32,10 @@ class _ResponsiveHomeScreenState extends State<ResponsiveHomeScreen> {
       bindings: <ShortcutActivator, VoidCallback>{
         const SingleActivator(LogicalKeyboardKey.keyN, control: true): _handleCreateNewNote,
         const SingleActivator(LogicalKeyboardKey.keyN, meta: true): _handleCreateNewNote,
+        const SingleActivator(LogicalKeyboardKey.keyK, control: true): () =>
+            SpotlightSearchModal.show(context: context, onNoteSelected: (n) => setState(() => _activeNote = n), onNewNote: _handleCreateNewNote),
+        const SingleActivator(LogicalKeyboardKey.keyK, meta: true): () =>
+            SpotlightSearchModal.show(context: context, onNoteSelected: (n) => setState(() => _activeNote = n), onNewNote: _handleCreateNewNote),
       },
       child: BlocBuilder<NotesDirectoryCubit, NotesDirectoryState>(
       builder: (context, state) {
@@ -89,26 +94,41 @@ class _ResponsiveHomeScreenState extends State<ResponsiveHomeScreen> {
                 ResponsiveSidebarItem(
                   icon: Icons.notes,
                   label: 'All Notes',
-                  count: state.allNotes.length,
+                  count: state.allCount,
                   isSelected: state.selectedCategory == 'All',
                   onTap: () => context.read<NotesDirectoryCubit>().selectCategory('All'),
                 ),
                 ResponsiveSidebarItem(
+                  icon: Icons.star_outline_rounded,
+                  label: 'Favorites',
+                  count: state.favoritesCount,
+                  isSelected: state.selectedCategory == 'Favorites',
+                  onTap: () => context.read<NotesDirectoryCubit>().selectCategory('Favorites'),
+                ),
+                ResponsiveSidebarItem(
                   icon: Icons.push_pin_outlined,
                   label: 'Pinned',
-                  count: state.allNotes.where((n) => n.isPinned).length,
+                  count: state.pinnedCount,
                   isSelected: state.selectedCategory == 'Pinned',
                   onTap: () => context.read<NotesDirectoryCubit>().selectCategory('Pinned'),
                 ),
                 ...state.availableCategories
-                    .where((c) => c != 'All' && c != 'Pinned')
+                    .where((c) => c != 'All' && c != 'Pinned' && c != 'Favorites' && c != 'Trash')
                     .map((cat) => ResponsiveSidebarItem(
                           icon: _iconForCategory(cat),
                           label: cat,
-                          count: state.allNotes.where((n) => n.category.toLowerCase() == cat.toLowerCase()).length,
+                          count: state.allNotes.where((n) => !n.isDeleted && n.category.toLowerCase() == cat.toLowerCase()).length,
                           isSelected: state.selectedCategory.toLowerCase() == cat.toLowerCase(),
                           onTap: () => context.read<NotesDirectoryCubit>().selectCategory(cat),
                         )),
+                if (state.trashCount > 0)
+                  ResponsiveSidebarItem(
+                    icon: Icons.delete_outline,
+                    label: 'Trash',
+                    count: state.trashCount,
+                    isSelected: state.selectedCategory == 'Trash',
+                    onTap: () => context.read<NotesDirectoryCubit>().selectCategory('Trash'),
+                  ),
                 const Spacer(),
                 ResponsiveSidebarItem(
                   icon: Icons.settings_outlined,
@@ -128,19 +148,7 @@ class _ResponsiveHomeScreenState extends State<ResponsiveHomeScreen> {
             ),
           ),
           const VerticalDivider(width: 1, thickness: 0.5),
-          // Editor Stage
-          Expanded(
-            child: _activeNote != null
-                ? BlocProvider(
-                    key: ValueKey(_activeNote!.id),
-                    create: (_) => NoteEditorCubit(note: _activeNote!, repository: widget.repository),
-                    child: NoteEditorScreen(
-                      onBack: () {},
-                      onDelete: () => _handleDeleteNote(_activeNote!.id),
-                    ),
-                  )
-                : _buildEmptyEditorPlaceholder(context),
-          ),
+          Expanded(child: _buildEditorStage(context)),
         ],
       ),
     );
@@ -159,18 +167,7 @@ class _ResponsiveHomeScreenState extends State<ResponsiveHomeScreen> {
             ),
           ),
           const VerticalDivider(width: 1, thickness: 0.5),
-          Expanded(
-            child: _activeNote != null
-                ? BlocProvider(
-                    key: ValueKey(_activeNote!.id),
-                    create: (_) => NoteEditorCubit(note: _activeNote!, repository: widget.repository),
-                    child: NoteEditorScreen(
-                      onBack: () {},
-                      onDelete: () => _handleDeleteNote(_activeNote!.id),
-                    ),
-                  )
-                : _buildEmptyEditorPlaceholder(context),
-          ),
+          Expanded(child: _buildEditorStage(context)),
         ],
       ),
     );
@@ -193,11 +190,7 @@ class _ResponsiveHomeScreenState extends State<ResponsiveHomeScreen> {
       child: isEditor
           ? KeyedSubtree(
               key: ValueKey('editor-${_activeNote!.id}'),
-              child: BlocProvider(
-                key: ValueKey(_activeNote!.id),
-                create: (_) => NoteEditorCubit(note: _activeNote!, repository: widget.repository),
-                child: NoteEditorScreen(onBack: _handleBack, onDelete: () => _handleDeleteNote(_activeNote!.id)),
-              ),
+              child: _buildEditorStage(context, onBack: _handleBack),
             )
           : KeyedSubtree(
               key: const ValueKey('directory'),
@@ -206,6 +199,18 @@ class _ResponsiveHomeScreenState extends State<ResponsiveHomeScreen> {
                 onNewNote: _handleCreateNewNote,
               ),
             ),
+    );
+  }
+
+  Widget _buildEditorStage(BuildContext context, {VoidCallback? onBack}) {
+    if (_activeNote == null) return _buildEmptyEditorPlaceholder(context);
+    return BlocProvider(
+      key: ValueKey(_activeNote!.id),
+      create: (_) => NoteEditorCubit(note: _activeNote!, repository: widget.repository),
+      child: NoteEditorScreen(
+        onBack: onBack ?? () {},
+        onDelete: () => _handleDeleteNote(_activeNote!.id),
+      ),
     );
   }
 

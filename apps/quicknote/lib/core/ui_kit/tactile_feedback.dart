@@ -6,6 +6,10 @@ class TactileFeedback {
     HapticFeedback.selectionClick();
   }
 
+  static void selection() {
+    HapticFeedback.selectionClick();
+  }
+
   static void light() {
     HapticFeedback.lightImpact();
   }

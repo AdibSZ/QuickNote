@@ -10,6 +10,7 @@ class GlassContainer extends StatelessWidget {
   final EdgeInsetsGeometry? margin;
   final Color? customBackground;
   final Color? customBorderColor;
+  final Color? borderColor;
   final double borderWidth;
   final double? width;
   final double? height;
@@ -23,6 +24,7 @@ class GlassContainer extends StatelessWidget {
     this.margin,
     this.customBackground,
     this.customBorderColor,
+    this.borderColor,
     this.borderWidth = 0.5,
     this.width,
     this.height,
@@ -38,7 +40,8 @@ class GlassContainer extends StatelessWidget {
             ? AppColors.darkSurfaceContainerLow.withValues(alpha: 0.65)
             : AppColors.lightSurfaceContainerLowest.withValues(alpha: 0.75));
 
-    final borderColor = customBorderColor ??
+    final effectiveBorder = borderColor ??
+        customBorderColor ??
         (isDark ? AppColors.darkHairlineBorder : AppColors.lightHairlineBorder);
 
     return Container(
@@ -63,7 +66,7 @@ class GlassContainer extends StatelessWidget {
             padding: padding,
             decoration: BoxDecoration(
               borderRadius: r,
-              border: Border.all(color: borderColor, width: borderWidth),
+              border: Border.all(color: effectiveBorder, width: borderWidth),
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,

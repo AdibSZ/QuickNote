@@ -7,6 +7,9 @@ import '../../../../core/ui_kit/tactile_feedback.dart';
 import '../widgets/editor_header.dart';
 import '../widgets/docked_bottom_bar.dart';
 import '../widgets/block_format_sheet.dart';
+import '../widgets/slash_command_sheet.dart';
+import '../widgets/note_color_picker_modal.dart';
+import '../widgets/editor_stats_hud.dart';
 import '../widgets/blocks/title_block_widget.dart';
 import '../widgets/block_item_builder.dart';
 import '../widgets/export_note_modal.dart';
@@ -62,7 +65,17 @@ class NoteEditorScreen extends StatelessWidget {
                       isSaving: state.isSaving,
                       noteTitle: state.note.title,
                       isPinned: state.note.isPinned,
+                      isFavorite: state.note.isFavorite,
+                      isLocked: state.note.isLocked,
+                      noteColor: state.note.color,
                       onTogglePin: () => cubit.togglePin(),
+                      onToggleFavorite: () => cubit.toggleFavorite(),
+                      onToggleLock: () => cubit.toggleLock(),
+                      onPickColor: () => NoteColorPickerModal.show(
+                        context,
+                        currentColor: state.note.color,
+                        onColorSelected: (c) => cubit.setColor(c),
+                      ),
                       onDeleteNote: onDelete,
                       onExport: () => ExportNoteModal.show(context, state.note),
                       onUndo: cubit.canUndo ? () => cubit.undo() : null,
@@ -183,11 +196,16 @@ class NoteEditorScreen extends StatelessWidget {
                 ],
               ),
               Positioned(
+                bottom: 85,
+                right: 20,
+                child: EditorStatsHud(note: state.note),
+              ),
+              Positioned(
                 left: 0,
                 right: 0,
                 bottom: 0,
                 child: DockedBottomBar(
-                  onAddBlock: () => cubit.addBlock(BlockType.paragraph, content: ''),
+                  onAddBlock: () => SlashCommandSheet.show(context, cubit),
                   onRecordVoice: () => cubit.addBlock(
                     BlockType.audioMemo,
                     content: 'Voice Note',

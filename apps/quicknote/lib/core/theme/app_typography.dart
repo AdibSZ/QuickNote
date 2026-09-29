@@ -36,21 +36,23 @@ class AppTypography {
     ).copyWith(fontFamilyFallback: _persianFallback);
   }
 
-  static TextStyle body(Color color, {double size = 14, FontWeight weight = FontWeight.w400}) {
+  static TextStyle body(Color color, {double size = 14, FontWeight weight = FontWeight.w400, FontStyle? fontStyle}) {
     return GoogleFonts.plusJakartaSans(
       fontSize: size,
       fontWeight: weight,
       color: color,
       height: 1.5,
+      fontStyle: fontStyle,
       letterSpacing: -0.005 * size,
     ).copyWith(fontFamilyFallback: _persianFallback);
   }
 
-  static TextStyle caption(Color color, {double size = 11, FontWeight weight = FontWeight.w500}) {
+  static TextStyle caption(Color color, {double size = 11, FontWeight weight = FontWeight.w500, FontStyle? fontStyle}) {
     return GoogleFonts.plusJakartaSans(
       fontSize: size,
       fontWeight: weight,
       color: color,
+      fontStyle: fontStyle,
       letterSpacing: 0.02 * size,
     ).copyWith(fontFamilyFallback: _persianFallback);
   }

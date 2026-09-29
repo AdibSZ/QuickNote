@@ -12,6 +12,10 @@ class Note extends Equatable {
   final bool isPinned;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? color;
+  final bool isFavorite;
+  final bool isLocked;
+  final bool isDeleted;
   final List<NoteBlock> blocks;
 
   const Note({
@@ -21,6 +25,10 @@ class Note extends Equatable {
     required this.category,
     this.tags = const [],
     this.isPinned = false,
+    this.color,
+    this.isFavorite = false,
+    this.isLocked = false,
+    this.isDeleted = false,
     required this.createdAt,
     required this.updatedAt,
     this.blocks = const [],
@@ -44,6 +52,16 @@ class Note extends Equatable {
         case BlockType.checklist:
           final isChecked = block.metadata['isChecked'] == true;
           buffer.writeln('- [${isChecked ? 'x' : ' '}] ${block.content}');
+          break;
+        case BlockType.callout:
+          final icon = block.metadata['icon'] as String? ?? '💡';
+          buffer.writeln('> $icon **${block.content}**\n');
+          break;
+        case BlockType.quote:
+          buffer.writeln('> *${block.content}*\n');
+          break;
+        case BlockType.divider:
+          buffer.writeln('---\n');
           break;
         case BlockType.codeBlock:
           final lang = block.metadata['language'] ?? '';
@@ -103,6 +121,10 @@ class Note extends Equatable {
     String? category,
     List<String>? tags,
     bool? isPinned,
+    String? color,
+    bool? isFavorite,
+    bool? isLocked,
+    bool? isDeleted,
     DateTime? createdAt,
     DateTime? updatedAt,
     List<NoteBlock>? blocks,
@@ -114,6 +136,10 @@ class Note extends Equatable {
       category: category ?? this.category,
       tags: tags ?? this.tags,
       isPinned: isPinned ?? this.isPinned,
+      color: color ?? this.color,
+      isFavorite: isFavorite ?? this.isFavorite,
+      isLocked: isLocked ?? this.isLocked,
+      isDeleted: isDeleted ?? this.isDeleted,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       blocks: blocks ?? this.blocks,
@@ -128,6 +154,10 @@ class Note extends Equatable {
       'category': category,
       'tags': tags,
       'isPinned': isPinned,
+      'color': color,
+      'isFavorite': isFavorite,
+      'isLocked': isLocked,
+      'isDeleted': isDeleted,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'blocks': blocks.map((b) => b.toJson()).toList(),
@@ -142,6 +172,10 @@ class Note extends Equatable {
       category: json['category'] as String? ?? 'General',
       tags: List<String>.from(json['tags'] as List? ?? []),
       isPinned: json['isPinned'] as bool? ?? false,
+      color: json['color'] as String?,
+      isFavorite: json['isFavorite'] as bool? ?? false,
+      isLocked: json['isLocked'] as bool? ?? false,
+      isDeleted: json['isDeleted'] as bool? ?? false,
       createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
       blocks: (json['blocks'] as List? ?? [])
@@ -158,6 +192,10 @@ class Note extends Equatable {
         category,
         tags,
         isPinned,
+        color,
+        isFavorite,
+        isLocked,
+        isDeleted,
         createdAt,
         updatedAt,
         blocks,

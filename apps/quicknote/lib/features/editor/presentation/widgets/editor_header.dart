@@ -10,7 +10,13 @@ class EditorHeader extends StatelessWidget {
   final bool isSaving;
   final String noteTitle;
   final bool isPinned;
+  final bool isFavorite;
+  final bool isLocked;
+  final String? noteColor;
   final VoidCallback? onTogglePin;
+  final VoidCallback? onToggleFavorite;
+  final VoidCallback? onToggleLock;
+  final VoidCallback? onPickColor;
   final VoidCallback? onDeleteNote;
   final VoidCallback? onExport;
   final VoidCallback? onUndo;
@@ -23,7 +29,13 @@ class EditorHeader extends StatelessWidget {
     this.isSaving = false,
     this.noteTitle = 'Editor',
     this.isPinned = false,
+    this.isFavorite = false,
+    this.isLocked = false,
+    this.noteColor,
     this.onTogglePin,
+    this.onToggleFavorite,
+    this.onToggleLock,
+    this.onPickColor,
     this.onDeleteNote,
     this.onExport,
     this.onUndo,
@@ -53,7 +65,7 @@ class EditorHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(
+          Flexible(
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -65,7 +77,7 @@ class EditorHeader extends StatelessWidget {
                 const SizedBox(width: 4),
                 const AppEmblem(size: 26),
                 const SizedBox(width: 8),
-                Flexible(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -88,9 +100,15 @@ class EditorHeader extends StatelessWidget {
               ],
             ),
           ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+          const SizedBox(width: 8),
+          Flexible(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              reverse: true,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
               GlassIconButton(
                 size: 34,
                 icon: Icon(
@@ -113,6 +131,19 @@ class EditorHeader extends StatelessWidget {
                 onPressed: onRedo,
               ),
               const SizedBox(width: 4),
+              if (onToggleFavorite != null) ...[
+                GlassIconButton(
+                  size: 34,
+                  icon: Icon(
+                    isFavorite ? Icons.star_rounded : Icons.star_outline_rounded,
+                    size: 19,
+                    color: isFavorite ? const Color(0xFFFFCC00) : onSurfaceVar,
+                  ),
+                  tooltip: isFavorite ? 'Favorited' : 'Favorite',
+                  onPressed: onToggleFavorite,
+                ),
+                const SizedBox(width: 4),
+              ],
               if (onTogglePin != null) ...[
                 GlassIconButton(
                   size: 34,
@@ -123,6 +154,32 @@ class EditorHeader extends StatelessWidget {
                   ),
                   tooltip: isPinned ? 'Unpin' : 'Pin',
                   onPressed: onTogglePin,
+                ),
+                const SizedBox(width: 4),
+              ],
+              if (onPickColor != null) ...[
+                GlassIconButton(
+                  size: 34,
+                  icon: Icon(
+                    Icons.palette_outlined,
+                    size: 17,
+                    color: onSurfaceVar,
+                  ),
+                  tooltip: 'Color Tint',
+                  onPressed: onPickColor,
+                ),
+                const SizedBox(width: 4),
+              ],
+              if (onToggleLock != null) ...[
+                GlassIconButton(
+                  size: 34,
+                  icon: Icon(
+                    isLocked ? Icons.lock : Icons.lock_open_outlined,
+                    size: 17,
+                    color: isLocked ? primary : onSurfaceVar,
+                  ),
+                  tooltip: isLocked ? 'Unlock Note' : 'Lock Note',
+                  onPressed: onToggleLock,
                 ),
                 const SizedBox(width: 4),
               ],
@@ -173,9 +230,11 @@ class EditorHeader extends StatelessWidget {
               ),
             ],
           ),
-        ],
+        ),
       ),
-    );
+    ],
+  ),
+);
   }
 
   void _confirmDelete(BuildContext context) {

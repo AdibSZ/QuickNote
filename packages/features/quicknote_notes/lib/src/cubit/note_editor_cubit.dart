@@ -64,6 +64,33 @@ class NoteEditorCubit extends Cubit<NoteEditorState> {
     await _repository.saveNote(updatedNote);
   }
 
+  Future<void> toggleFavorite() async {
+    final updatedNote = state.note.copyWith(
+      isFavorite: !state.note.isFavorite,
+      updatedAt: DateTime.now(),
+    );
+    emit(state.copyWith(note: updatedNote));
+    await _repository.saveNote(updatedNote);
+  }
+
+  Future<void> setColor(String? color) async {
+    final updatedNote = state.note.copyWith(
+      color: color,
+      updatedAt: DateTime.now(),
+    );
+    emit(state.copyWith(note: updatedNote));
+    await _repository.saveNote(updatedNote);
+  }
+
+  Future<void> toggleLock() async {
+    final updatedNote = state.note.copyWith(
+      isLocked: !state.note.isLocked,
+      updatedAt: DateTime.now(),
+    );
+    emit(state.copyWith(note: updatedNote));
+    await _repository.saveNote(updatedNote);
+  }
+
   final List<List<NoteBlock>> _undoStack = [];
   final List<List<NoteBlock>> _redoStack = [];
 
@@ -130,7 +157,11 @@ class NoteEditorCubit extends Cubit<NoteEditorState> {
       if (block.id == id) {
         final defaultMeta = newType == BlockType.checklist
             ? {'isChecked': false}
-            : (newType == BlockType.codeBlock ? {'language': 'DART'} : <String, dynamic>{});
+            : (newType == BlockType.codeBlock
+                ? {'language': 'DART'}
+                : (newType == BlockType.callout
+                    ? {'icon': '💡', 'tint': 'amber'}
+                    : <String, dynamic>{}));
         return block.copyWith(
           type: newType,
           content: content ?? block.content,

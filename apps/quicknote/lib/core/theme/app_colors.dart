@@ -57,4 +57,6 @@ class AppColors {
   static const Color darkHairlineBorder = Color(0x14FFFFFF);
   static const Color lightHairlineTop = Color(0xE6FFFFFF);
   static const Color lightHairlineBorder = Color(0x14000000);
+  static const Color darkBorder = Color(0x1FFFFFFF);
+  static const Color lightBorder = Color(0x1F000000);
 }

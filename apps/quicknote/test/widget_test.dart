@@ -38,7 +38,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Tap Checklist in docked bar
-    await tester.tap(find.byIcon(Icons.check_box_outlined));
+    await tester.tap(find.byIcon(Icons.check_box_outlined).last);
     await tester.pumpAndSettle();
 
     expect(find.text('Task description...'), findsWidgets);

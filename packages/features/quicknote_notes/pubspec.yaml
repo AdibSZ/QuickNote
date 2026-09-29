@@ -14,3 +14,6 @@ dependencies:
     path: ../../core/quicknote_core
   quicknote_storage:
     path: ../../core/quicknote_storage
+
+dev_dependencies:
+  test: ^1.24.0

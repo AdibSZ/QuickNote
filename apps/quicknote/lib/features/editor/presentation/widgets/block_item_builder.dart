@@ -6,6 +6,9 @@ import 'blocks/audio_memo_block_widget.dart';
 import 'blocks/code_block_widget.dart';
 import 'blocks/diagram_block_widget.dart';
 import 'blocks/checklist_block_widget.dart';
+import 'blocks/callout_block_widget.dart';
+import 'blocks/quote_block_widget.dart';
+import 'blocks/divider_block_widget.dart';
 
 class BlockItemBuilder {
   static Widget build({
@@ -79,6 +82,29 @@ class BlockItemBuilder {
             content: '',
             metadata: {'isChecked': false},
           ),
+        );
+      case BlockType.callout:
+        return CalloutBlockWidget(
+          block: block,
+          isSelected: state.selectedBlockId == block.id,
+          onChanged: (val) => cubit.updateBlockContent(block.id, val),
+          onStyleChanged: (icon, tint) => cubit.updateBlockMetadata(
+            block.id,
+            {'icon': icon, 'tint': tint},
+          ),
+          onDelete: () => cubit.removeBlock(block.id),
+        );
+      case BlockType.quote:
+        return QuoteBlockWidget(
+          block: block,
+          isSelected: state.selectedBlockId == block.id,
+          onChanged: (val) => cubit.updateBlockContent(block.id, val),
+          onDelete: () => cubit.removeBlock(block.id),
+        );
+      case BlockType.divider:
+        return DividerBlockWidget(
+          block: block,
+          onDelete: () => cubit.removeBlock(block.id),
         );
     }
   }

@@ -24,7 +24,7 @@ class NotesDirectoryCubit extends Cubit<NotesDirectoryState> {
 
   void _applyNotesUpdate(List<Note> notes) {
     String selCat = state.selectedCategory;
-    if (selCat != 'All' && selCat != 'Pinned') {
+    if (selCat != 'All' && selCat != 'Pinned' && selCat != 'Favorites' && selCat != 'Trash') {
       final exists = notes.any((n) => n.category.trim().toLowerCase() == selCat.toLowerCase());
       if (!exists) selCat = 'All';
     }
@@ -77,9 +77,72 @@ class NotesDirectoryCubit extends Cubit<NotesDirectoryState> {
     loadNotes();
   }
 
-  Future<void> deleteNote(String id) async {
-    await _repository.deleteNote(id);
+  Future<void> toggleFavorite(String id) async {
+    final note = _repository.getNoteById(id);
+    if (note == null) return;
+    await _repository.saveNote(note.copyWith(
+      isFavorite: !note.isFavorite,
+      updatedAt: DateTime.now(),
+    ));
     loadNotes();
+  }
+
+  Future<void> setNoteColor(String id, String? color) async {
+    final note = _repository.getNoteById(id);
+    if (note == null) return;
+    await _repository.saveNote(note.copyWith(
+      color: color,
+      updatedAt: DateTime.now(),
+    ));
+    loadNotes();
+  }
+
+  Future<void> toggleLock(String id) async {
+    final note = _repository.getNoteById(id);
+    if (note == null) return;
+    await _repository.saveNote(note.copyWith(
+      isLocked: !note.isLocked,
+      updatedAt: DateTime.now(),
+    ));
+    loadNotes();
+  }
+
+  Future<void> moveToTrash(String id) async {
+    final note = _repository.getNoteById(id);
+    if (note == null) return;
+    await _repository.saveNote(note.copyWith(
+      isDeleted: true,
+      updatedAt: DateTime.now(),
+    ));
+    loadNotes();
+  }
+
+  Future<void> restoreFromTrash(String id) async {
+    final note = _repository.getNoteById(id);
+    if (note == null) return;
+    await _repository.saveNote(note.copyWith(
+      isDeleted: false,
+      updatedAt: DateTime.now(),
+    ));
+    loadNotes();
+  }
+
+  Future<void> emptyTrash() async {
+    final trashNotes = _repository.getAllNotes().where((n) => n.isDeleted).toList();
+    for (final note in trashNotes) {
+      await _repository.deleteNote(note.id);
+    }
+    loadNotes();
+  }
+
+  Future<void> deleteNote(String id) async {
+    final note = _repository.getNoteById(id);
+    if (note != null && !note.isDeleted) {
+      await moveToTrash(id);
+    } else {
+      await _repository.deleteNote(id);
+      loadNotes();
+    }
   }
 
   Future<Note?> duplicateNote(String id) async {

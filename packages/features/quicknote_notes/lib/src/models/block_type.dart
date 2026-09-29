@@ -6,4 +6,7 @@ enum BlockType {
   codeBlock,
   diagram,
   checklist,
+  callout,
+  quote,
+  divider,
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quicknote_core/quicknote_core.dart';
 import 'package:quicknote_notes/quicknote_notes.dart';
@@ -12,6 +13,7 @@ import '../widgets/category_filter_chips.dart';
 import '../widgets/tags_view.dart';
 import '../widgets/note_card_widget.dart';
 import '../widgets/sort_options_modal.dart';
+import '../widgets/spotlight_search_modal.dart';
 
 class NotesDirectoryScreen extends StatelessWidget {
   final ValueChanged<Note> onNoteSelected;
@@ -30,17 +32,24 @@ class NotesDirectoryScreen extends StatelessWidget {
     final onSurfaceVar = isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant;
     final primary = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            DirectoryHeader(
-              onNewNotePressed: onNewNote,
-              onSettingsPressed: () => SettingsModal.show(context),
-              onSortPressed: () => SortOptionsModal.show(context),
-            ),
+    return CallbackShortcuts(
+      bindings: <ShortcutActivator, VoidCallback>{
+        const SingleActivator(LogicalKeyboardKey.keyK, control: true): () =>
+            SpotlightSearchModal.show(context: context, onNoteSelected: onNoteSelected, onNewNote: onNewNote),
+        const SingleActivator(LogicalKeyboardKey.keyK, meta: true): () =>
+            SpotlightSearchModal.show(context: context, onNoteSelected: onNoteSelected, onNewNote: onNewNote),
+      },
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              DirectoryHeader(
+                onNewNotePressed: onNewNote,
+                onSettingsPressed: () => SettingsModal.show(context),
+                onSortPressed: () => SortOptionsModal.show(context),
+              ),
             Expanded(
               child: BlocBuilder<NotesDirectoryCubit, NotesDirectoryState>(
                 builder: (context, state) {
@@ -118,6 +127,8 @@ class NotesDirectoryScreen extends StatelessWidget {
                                   SearchSpotlightBar(
                                     initialValue: state.searchQuery,
                                     onChanged: (q) => context.read<NotesDirectoryCubit>().updateSearch(q),
+                                    onTapSpotlight: () =>
+                                        SpotlightSearchModal.show(context: context, onNoteSelected: onNoteSelected, onNewNote: onNewNote),
                                   ),
                                   const SizedBox(height: 6),
                                   if (state.activeTab == DirectoryTab.all)
@@ -203,8 +214,9 @@ class NotesDirectoryScreen extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildSectionHeader(String title, IconData icon, Color color) {
     return SliverToBoxAdapter(
@@ -247,6 +259,8 @@ class NotesDirectoryScreen extends StatelessWidget {
               note: note,
               onTap: () => onNoteSelected(note),
               onTogglePin: () => context.read<NotesDirectoryCubit>().togglePin(note.id),
+              onToggleFavorite: () => context.read<NotesDirectoryCubit>().toggleFavorite(note.id),
+              onColorSelected: (c) => context.read<NotesDirectoryCubit>().setNoteColor(note.id, c),
               onDelete: () => context.read<NotesDirectoryCubit>().deleteNote(note.id),
               onDuplicate: () => context.read<NotesDirectoryCubit>().duplicateNote(note.id),
             );

@@ -8,11 +8,13 @@ import '../../../../core/ui_kit/tactile_feedback.dart';
 class SearchSpotlightBar extends StatefulWidget {
   final ValueChanged<String> onChanged;
   final String initialValue;
+  final VoidCallback? onTapSpotlight;
 
   const SearchSpotlightBar({
     super.key,
     required this.onChanged,
     this.initialValue = '',
+    this.onTapSpotlight,
   });
 
   @override
@@ -94,15 +96,21 @@ class _SearchSpotlightBarState extends State<SearchSpotlightBar> {
               ),
             )
           else
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkSurfaceContainerHigh : AppColors.lightSurfaceContainerHigh,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                '⌘K',
-                style: AppTypography.code(outline, size: 10, weight: FontWeight.w600),
+            GestureDetector(
+              onTap: () {
+                TactileFeedback.selection();
+                widget.onTapSpotlight?.call();
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkSurfaceContainerHigh : AppColors.lightSurfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  '⌘K',
+                  style: AppTypography.code(outline, size: 10, weight: FontWeight.w600),
+                ),
               ),
             ),
         ],
