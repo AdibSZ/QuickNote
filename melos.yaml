@@ -1,0 +1,4 @@
+name: quicknote_workspace
+packages:
+  - apps/*
+  - packages/**

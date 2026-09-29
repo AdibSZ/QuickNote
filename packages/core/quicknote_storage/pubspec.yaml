@@ -1,0 +1,12 @@
+name: quicknote_storage
+description: High-performance pure Dart storage abstractions and in-memory delta persistence
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  meta: ^1.11.0
+  quicknote_core:
+    path: ../quicknote_core

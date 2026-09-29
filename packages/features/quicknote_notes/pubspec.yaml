@@ -1,0 +1,16 @@
+name: quicknote_notes
+description: Pure Dart Domain, Repository and BLoCs for QuickNote notes management
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  meta: ^1.11.0
+  equatable: ^2.0.5
+  bloc: ^8.1.4
+  quicknote_core:
+    path: ../../core/quicknote_core
+  quicknote_storage:
+    path: ../../core/quicknote_storage

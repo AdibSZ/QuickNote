@@ -1,0 +1,11 @@
+name: quicknote_core
+description: Pure Dart Core Package for QuickNote
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  meta: ^1.11.0
+  equatable: ^2.0.5
