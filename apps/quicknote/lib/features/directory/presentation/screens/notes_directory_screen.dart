@@ -86,35 +86,30 @@ class NotesDirectoryScreen extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  Wrap(
+                                    crossAxisAlignment: WrapCrossAlignment.center,
+                                    spacing: 10,
+                                    runSpacing: 4,
                                     children: [
-                                      Row(
-                                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                                        textBaseline: TextBaseline.alphabetic,
-                                        children: [
-                                          Text(
-                                            'Notes',
-                                            style: AppTypography.display(onSurface, size: 28, weight: FontWeight.w600),
+                                      Text(
+                                        TextRegistry.get(TextKey.directoryTitle),
+                                        style: AppTypography.display(onSurface, size: 28, weight: FontWeight.w600),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: isDark
+                                              ? AppColors.darkSurfaceContainerHigh
+                                              : AppColors.lightSurfaceContainerHigh,
+                                          borderRadius: BorderRadius.circular(9999),
+                                        ),
+                                        child: Text(
+                                          TextRegistry.get(
+                                            TextKey.notesCount,
+                                            params: {'count': '${state.allNotes.length}'},
                                           ),
-                                          const SizedBox(width: 10),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-                                            decoration: BoxDecoration(
-                                              color: isDark
-                                                  ? AppColors.darkSurfaceContainerHigh
-                                                  : AppColors.lightSurfaceContainerHigh,
-                                              borderRadius: BorderRadius.circular(9999),
-                                            ),
-                                            child: Text(
-                                              TextRegistry.get(
-                                                TextKey.notesCount,
-                                                params: {'count': '${state.allNotes.length}'},
-                                              ),
-                                              style: AppTypography.caption(onSurfaceVar, size: 11, weight: FontWeight.w500),
-                                            ),
-                                          ),
-                                        ],
+                                          style: AppTypography.caption(onSurfaceVar, size: 11, weight: FontWeight.w500),
+                                        ),
                                       ),
                                     ],
                                   ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quicknote_core/quicknote_core.dart';
 import 'package:quicknote_notes/quicknote_notes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -147,7 +148,7 @@ class NoteCardWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  note.title.isEmpty ? 'Untitled Note' : note.title,
+                  note.title.isEmpty ? TextRegistry.get(TextKey.untitledNote) : note.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textDirection: getTextDirection(note.title, defaultIfEmpty: true),

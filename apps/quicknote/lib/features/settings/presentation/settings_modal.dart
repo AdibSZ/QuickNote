@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quicknote_core/quicknote_core.dart';
 import 'package:quicknote_notes/quicknote_notes.dart';
+import '../../../../core/localization/locale_cubit.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/theme_cubit.dart';
@@ -17,12 +19,13 @@ class SettingsModal extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => BlocProvider.value(
-        value: context.read<NotesDirectoryCubit>(),
-        child: BlocProvider.value(
-          value: context.read<ThemeCubit>(),
-          child: const SettingsModal(),
-        ),
+      builder: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: context.read<NotesDirectoryCubit>()),
+          BlocProvider.value(value: context.read<ThemeCubit>()),
+          BlocProvider.value(value: context.read<LocaleCubit>()),
+        ],
+        child: const SettingsModal(),
       ),
     );
   }
@@ -50,133 +53,119 @@ class SettingsModal extends StatelessWidget {
           final totalNotes = state.allNotes.length;
           final totalWords = state.allNotes.fold<int>(0, (sum, n) => sum + n.wordCount);
 
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Settings & Data', style: AppTypography.title(onSurface, size: 18)),
-                  IconButton(
-                    icon: const Icon(Icons.close, size: 18),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // Appearance Section
-              Text('APPEARANCE', style: AppTypography.caption(onSurfaceVar, size: 10, weight: FontWeight.w700)),
-              const SizedBox(height: 8),
-              BlocBuilder<ThemeCubit, ThemeMode>(
-                builder: (context, mode) {
-                  return SegmentedButton<ThemeMode>(
-                    segments: const [
-                      ButtonSegment(value: ThemeMode.dark, label: Text('Dark'), icon: Icon(Icons.dark_mode_outlined, size: 14)),
-                      ButtonSegment(value: ThemeMode.light, label: Text('Light'), icon: Icon(Icons.light_mode_outlined, size: 14)),
+          return SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(TextRegistry.get(TextKey.settingsTitle), style: AppTypography.title(onSurface, size: 18)),
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 18),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(TextRegistry.get(TextKey.appearance), style: AppTypography.caption(onSurfaceVar, size: 10, weight: FontWeight.w700)),
+                const SizedBox(height: 8),
+                BlocBuilder<ThemeCubit, ThemeMode>(
+                  builder: (context, mode) => SegmentedButton<ThemeMode>(
+                    segments: [
+                      ButtonSegment(value: ThemeMode.dark, label: Text(TextRegistry.get(TextKey.darkMode)), icon: const Icon(Icons.dark_mode_outlined, size: 14)),
+                      ButtonSegment(value: ThemeMode.light, label: Text(TextRegistry.get(TextKey.lightMode)), icon: const Icon(Icons.light_mode_outlined, size: 14)),
                     ],
                     selected: {mode},
                     onSelectionChanged: (set) {
                       TactileFeedback.click();
                       context.read<ThemeCubit>().setTheme(set.first);
                     },
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              Text('LANGUAGE', style: AppTypography.caption(onSurfaceVar, size: 10, weight: FontWeight.w700)),
-              const SizedBox(height: 8),
-              SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(value: 'en', label: Text('English (Default)'), icon: Icon(Icons.language, size: 14)),
-                  ButtonSegment(value: 'fa', label: Text('Persian (فارسی)'), icon: Icon(Icons.translate, size: 14)),
-                ],
-                selected: const {'en'},
-                onSelectionChanged: (set) {
-                  TactileFeedback.selection();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        set.first == 'en'
-                            ? 'QuickNote is set to 100% English.'
-                            : 'App is 100% English. RTL text typing is supported in notes.',
-                      ),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 20),
-              // Stats
-              Text('STORAGE & STATS', style: AppTypography.caption(onSurfaceVar, size: 10, weight: FontWeight.w700)),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkSurfaceContainerLow : AppColors.lightSurfaceContainerLow,
-                  borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _StatTile(label: 'Total Notes', value: '$totalNotes', color: onSurface),
-                    _StatTile(label: 'Total Words', value: '$totalWords', color: onSurface),
-                    _StatTile(label: 'Storage Mode', value: 'In-Memory WAL', color: onSurface),
-                  ],
+                const SizedBox(height: 16),
+                Text(TextRegistry.get(TextKey.language), style: AppTypography.caption(onSurfaceVar, size: 10, weight: FontWeight.w700)),
+                const SizedBox(height: 8),
+                BlocBuilder<LocaleCubit, Locale>(
+                  builder: (context, locale) => SegmentedButton<String>(
+                    segments: const [
+                      ButtonSegment(value: 'en', label: Text('English'), icon: Icon(Icons.language, size: 14)),
+                      ButtonSegment(value: 'fa', label: Text('فارسی (Persian)'), icon: Icon(Icons.translate, size: 14)),
+                    ],
+                    selected: {locale.languageCode},
+                    onSelectionChanged: (set) {
+                      TactileFeedback.selection();
+                      context.read<LocaleCubit>().setLocale(set.first);
+                    },
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              // Actions
-              Text('BACKUP & EXPORT', style: AppTypography.caption(onSurfaceVar, size: 10, weight: FontWeight.w700)),
-              const SizedBox(height: 8),
-              ListTile(
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.archive_outlined, color: Color(0xFF0A84FF), size: 20),
-                title: const Text('Local Backup & Restore (.zip)'),
-                subtitle: const Text('Export complete notes archive or restore from .zip'),
-                onTap: () {
-                  Navigator.pop(context);
-                  BackupRestoreModal.show(context);
-                },
-              ),
-              ListTile(
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.file_download_outlined, size: 20),
-                title: const Text('Copy All Notes as Markdown'),
-                subtitle: const Text('Export complete notes archive to clipboard'),
-                onTap: () => _exportAllMarkdown(context, state.allNotes),
-              ),
-              ListTile(
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.data_object, size: 20),
-                title: const Text('Copy All Notes as JSON'),
-                subtitle: const Text('Structured database backup format'),
-                onTap: () => _exportAllJson(context, state.allNotes),
-              ),
-              const Divider(height: 24),
-              Text('HELP & PRODUCTIVITY', style: AppTypography.caption(onSurfaceVar, size: 10, weight: FontWeight.w700)),
-              const SizedBox(height: 8),
-              ListTile(
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.keyboard_outlined, size: 20),
-                title: const Text('Keyboard Shortcuts'),
-                subtitle: const Text('Undo, redo, and quick checklist workflows'),
-                onTap: () => _showShortcutsDialog(context),
-              ),
-              const Divider(height: 24),
-              ListTile(
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.delete_forever, color: Colors.redAccent, size: 20),
-                title: const Text('Clear All Notes', style: TextStyle(color: Colors.redAccent)),
-                subtitle: const Text('Deletes all local notes permanently'),
-                onTap: () => _confirmClearAll(context),
-              ),
-            ],
+                const SizedBox(height: 20),
+                Text(TextRegistry.get(TextKey.storageStats), style: AppTypography.caption(onSurfaceVar, size: 10, weight: FontWeight.w700)),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.darkSurfaceContainerLow : AppColors.lightSurfaceContainerLow,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _StatTile(label: TextRegistry.get(TextKey.totalNotes), value: '$totalNotes', color: onSurface),
+                      _StatTile(label: TextRegistry.get(TextKey.totalWords), value: '$totalWords', color: onSurface),
+                      _StatTile(label: TextRegistry.get(TextKey.storageMode), value: 'Memory+WAL', color: onSurface),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(TextRegistry.get(TextKey.backupExport), style: AppTypography.caption(onSurfaceVar, size: 10, weight: FontWeight.w700)),
+                const SizedBox(height: 8),
+                ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.archive_outlined, color: Color(0xFF0A84FF), size: 20),
+                  title: const Text('Local Backup & Restore (.zip)'),
+                  subtitle: const Text('Export complete notes archive or restore from .zip'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    BackupRestoreModal.show(context);
+                  },
+                ),
+                ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.file_download_outlined, size: 20),
+                  title: const Text('Copy All Notes as Markdown'),
+                  onTap: () => _exportAllMarkdown(context, state.allNotes),
+                ),
+                ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.data_object, size: 20),
+                  title: const Text('Copy All Notes as JSON'),
+                  onTap: () => _exportAllJson(context, state.allNotes),
+                ),
+                const Divider(height: 24),
+                Text(TextRegistry.get(TextKey.helpProductivity), style: AppTypography.caption(onSurfaceVar, size: 10, weight: FontWeight.w700)),
+                const SizedBox(height: 8),
+                ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.keyboard_outlined, size: 20),
+                  title: Text(TextRegistry.get(TextKey.keyboardShortcuts)),
+                  onTap: () => _showShortcutsDialog(context),
+                ),
+                const Divider(height: 24),
+                ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.delete_forever, color: Colors.redAccent, size: 20),
+                  title: Text(TextRegistry.get(TextKey.clearAllNotes), style: const TextStyle(color: Colors.redAccent)),
+                  onTap: () => _confirmClearAll(context),
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -229,7 +218,7 @@ class SettingsModal extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Keyboard Shortcuts'),
+        title: Text(TextRegistry.get(TextKey.keyboardShortcuts)),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [

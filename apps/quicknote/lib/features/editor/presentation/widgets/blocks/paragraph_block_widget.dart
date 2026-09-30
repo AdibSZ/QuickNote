@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:quicknote_core/quicknote_core.dart';
 import 'package:quicknote_notes/quicknote_notes.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
@@ -45,6 +46,7 @@ class _ParagraphBlockWidgetState extends State<ParagraphBlockWidget> {
     super.initState();
     _controller = TextEditingController(text: widget.block.content);
     _focusNode = FocusNode();
+    _focusNode.addListener(_onFocusChange);
     _isRtl = isRtlText(_controller.text);
 
     _focusNode.onKeyEvent = (node, event) {
@@ -80,8 +82,13 @@ class _ParagraphBlockWidgetState extends State<ParagraphBlockWidget> {
     }
   }
 
+  void _onFocusChange() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
+    _focusNode.removeListener(_onFocusChange);
     _focusNode.dispose();
     _controller.dispose();
     super.dispose();
@@ -176,7 +183,7 @@ class _ParagraphBlockWidgetState extends State<ParagraphBlockWidget> {
                       border: InputBorder.none,
                       isDense: true,
                       contentPadding: EdgeInsets.zero,
-                      hintText: 'Type text here...',
+                      hintText: _focusNode.hasFocus ? '' : TextRegistry.get(TextKey.typeTextHere),
                       hintStyle: AppTypography.body(onSurfaceVar.withValues(alpha: 0.4), size: fontSize),
                     ),
                   ),

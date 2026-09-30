@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quicknote_core/quicknote_core.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/ui_kit/tactile_feedback.dart';
@@ -40,6 +41,12 @@ class CategoryFilterChips extends StatelessWidget {
       default:
         return Icons.folder_outlined;
     }
+  }
+
+  String _displayName(String cat) {
+    if (cat.toLowerCase() == 'all') return TextRegistry.get(TextKey.allNotesTab);
+    if (cat.toLowerCase() == 'pinned') return TextRegistry.get(TextKey.pinnedFilter);
+    return cat;
   }
 
   @override
@@ -88,7 +95,7 @@ class CategoryFilterChips extends StatelessWidget {
                     Icon(icon, size: 14, color: isSelected ? onSurface : onSurfaceVar),
                     const SizedBox(width: 5),
                     Text(
-                      cat,
+                      _displayName(cat),
                       style: AppTypography.title(
                         isSelected ? onSurface : onSurfaceVar,
                         size: 12,

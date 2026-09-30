@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quicknote_core/quicknote_core.dart';
 import 'package:quicknote_notes/quicknote_notes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -107,7 +108,7 @@ class _SpotlightDialogState extends State<_SpotlightDialog> {
                         autofocus: true,
                         style: AppTypography.body(onSurface, size: 15),
                         decoration: InputDecoration(
-                          hintText: 'Search notes, tags, or type a command...',
+                          hintText: TextRegistry.get(TextKey.searchPlaceholder),
                           hintStyle: AppTypography.body(onSurfaceVar.withValues(alpha: 0.6), size: 14),
                           border: InputBorder.none,
                           isDense: true,

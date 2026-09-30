@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quicknote_core/quicknote_core.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/ui_kit/app_emblem.dart';
@@ -92,12 +93,16 @@ class EditorHeader extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        noteTitle.isEmpty ? 'Untitled' : noteTitle,
+                        noteTitle.isEmpty ? TextRegistry.get(TextKey.untitledNote) : noteTitle,
                         overflow: TextOverflow.ellipsis,
                         style: AppTypography.title(onSurface, size: 14, weight: FontWeight.w600),
                       ),
                       Text(
-                        isSaving ? 'Saving...' : (wordCount > 0 ? '$wordCount words' : 'Saved'),
+                        isSaving
+                            ? '...'
+                            : (wordCount > 0
+                                ? TextRegistry.get(TextKey.wordsCount, params: {'count': '$wordCount'})
+                                : TextRegistry.get(TextKey.savedToDevice)),
                         style: AppTypography.caption(
                           isSaving ? primary : onSurfaceVar.withValues(alpha: 0.6),
                           size: 10,
@@ -178,7 +183,7 @@ class EditorHeader extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      isSaving ? 'Saving...' : 'Saved',
+                      isSaving ? '...' : TextRegistry.get(TextKey.savedToDevice),
                       style: AppTypography.caption(onSurfaceVar, size: 10),
                     ),
                   ],

@@ -130,6 +130,13 @@ class NoteEditorCubit extends Cubit<NoteEditorState> {
   }
 
   void addBlock(BlockType type, {String content = '', Map<String, dynamic>? metadata}) {
+    if (type == BlockType.paragraph && content.isEmpty && state.blocks.isNotEmpty) {
+      final last = state.blocks.last;
+      if (last.type == BlockType.paragraph && last.content.trim().isEmpty) {
+        emit(state.copyWith(selectedBlockId: last.id));
+        return;
+      }
+    }
     _recordHistory();
     final newBlock = NoteBlock(
       id: 'blk-${DateTime.now().microsecondsSinceEpoch}',

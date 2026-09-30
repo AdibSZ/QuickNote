@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:quicknote_core/quicknote_core.dart';
 import 'package:quicknote_notes/quicknote_notes.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
@@ -111,7 +112,7 @@ class _HeadingBlockWidgetState extends State<HeadingBlockWidget> {
               ),
               decoration: InputDecoration(
                 border: InputBorder.none,
-                hintText: 'Heading...',
+                hintText: TextRegistry.get(TextKey.addHeading),
                 hintStyle: AppTypography.headline(
                   onSurfaceVar.withValues(alpha: 0.5),
                   size: fontSize,

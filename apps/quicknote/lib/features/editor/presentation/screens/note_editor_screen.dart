@@ -11,7 +11,6 @@ import '../../../zen/presentation/widgets/zen_mode_modal.dart';
 import '../widgets/editor_header.dart';
 import '../widgets/docked_bottom_bar.dart';
 import '../widgets/block_format_sheet.dart';
-import '../widgets/slash_command_sheet.dart';
 import '../widgets/note_color_picker_modal.dart';
 import '../widgets/editor_stats_hud.dart';
 import '../widgets/blocks/title_block_widget.dart';
@@ -227,7 +226,10 @@ class NoteEditorScreen extends StatelessWidget {
                 right: 0,
                 bottom: 0,
                 child: DockedBottomBar(
-                  onAddBlock: () => SlashCommandSheet.show(context, cubit),
+                  onAddBlock: () => cubit.addBlock(BlockType.paragraph, content: ''),
+                  onAddHeading: () => cubit.addBlock(BlockType.heading2, content: '', metadata: {'fontSize': 20.0}),
+                  onAddDivider: () => cubit.addBlock(BlockType.divider, content: ''),
+                  onAddDiagram: () => cubit.addBlock(BlockType.diagram, content: 'Flow Diagram'),
                   onVoiceRecorded: (sec) => cubit.addBlock(
                     BlockType.audioMemo,
                     content: 'Voice Memo',

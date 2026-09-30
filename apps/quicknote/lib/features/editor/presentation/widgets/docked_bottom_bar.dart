@@ -3,12 +3,16 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:quicknote_core/quicknote_core.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/ui_kit/tactile_feedback.dart';
 import 'blocks/doodle_canvas_modal.dart';
 
 class DockedBottomBar extends StatefulWidget {
   final VoidCallback onAddBlock;
+  final VoidCallback onAddHeading;
+  final VoidCallback onAddDivider;
+  final VoidCallback onAddDiagram;
   final ValueChanged<int> onVoiceRecorded;
   final VoidCallback onAddChecklist;
   final VoidCallback onInsertDate;
@@ -22,6 +26,9 @@ class DockedBottomBar extends StatefulWidget {
   const DockedBottomBar({
     super.key,
     required this.onAddBlock,
+    required this.onAddHeading,
+    required this.onAddDivider,
+    required this.onAddDiagram,
     required this.onVoiceRecorded,
     required this.onAddChecklist,
     required this.onInsertDate,
@@ -96,7 +103,7 @@ class _DockedBottomBarState extends State<DockedBottomBar> with SingleTickerProv
     final bottomPad = MediaQuery.paddingOf(context).bottom;
 
     return Padding(
-      padding: EdgeInsets.only(left: 16, right: 16, bottom: bottomPad + 10),
+      padding: EdgeInsets.only(left: 14, right: 14, bottom: bottomPad + 10),
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 250),
         child: _isRecording ? _buildRecordingBar() : _buildNormalBar(isDark),
@@ -109,15 +116,15 @@ class _DockedBottomBarState extends State<DockedBottomBar> with SingleTickerProv
       key: const ValueKey('recording_bar'),
       borderRadius: BorderRadius.circular(28),
       child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+        filter: ui.ImageFilter.blur(sigmaX: 30, sigmaY: 30),
         child: Container(
           height: 54,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                const Color(0xFFDC2626).withValues(alpha: 0.85),
-                const Color(0xFF991B1B).withValues(alpha: 0.75),
+                const Color(0xFFDC2626).withValues(alpha: 0.90),
+                const Color(0xFF991B1B).withValues(alpha: 0.80),
               ],
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
@@ -126,11 +133,11 @@ class _DockedBottomBarState extends State<DockedBottomBar> with SingleTickerProv
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFFDC2626).withValues(alpha: 0.45),
-                blurRadius: 20,
+                blurRadius: 22,
                 offset: const Offset(0, 6),
               ),
             ],
-            border: Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1.2),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.40), width: 1.2),
           ),
           child: Row(
             children: [
@@ -172,7 +179,6 @@ class _DockedBottomBarState extends State<DockedBottomBar> with SingleTickerProv
               const Spacer(),
               IconButton(
                 icon: const Icon(Icons.close, color: Colors.white70, size: 20),
-                tooltip: 'Discard',
                 padding: const EdgeInsets.all(6),
                 constraints: const BoxConstraints(),
                 onPressed: () {
@@ -185,7 +191,6 @@ class _DockedBottomBarState extends State<DockedBottomBar> with SingleTickerProv
                 decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                 child: IconButton(
                   icon: const Icon(Icons.check, color: Color(0xFFDC2626), size: 18),
-                  tooltip: 'Finish',
                   padding: const EdgeInsets.all(7),
                   constraints: const BoxConstraints(),
                   onPressed: _stopRecording,
@@ -204,47 +209,63 @@ class _DockedBottomBarState extends State<DockedBottomBar> with SingleTickerProv
       key: const ValueKey('normal_bar'),
       borderRadius: BorderRadius.circular(28),
       child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+        filter: ui.ImageFilter.blur(sigmaX: 30, sigmaY: 30),
         child: Container(
           height: 52,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF16161B).withValues(alpha: 0.55)
-                : Colors.white.withValues(alpha: 0.65),
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [
+                      const Color(0xFF1C1C24).withValues(alpha: 0.70),
+                      const Color(0xFF121217).withValues(alpha: 0.85),
+                    ]
+                  : [
+                      Colors.white.withValues(alpha: 0.85),
+                      const Color(0xFFF8FAFC).withValues(alpha: 0.75),
+                    ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.10),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
-                spreadRadius: -2,
+                color: Colors.black.withValues(alpha: isDark ? 0.40 : 0.08),
+                blurRadius: 28,
+                offset: const Offset(0, 10),
+                spreadRadius: -1,
+              ),
+              BoxShadow(
+                color: (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7)).withValues(alpha: 0.06),
+                blurRadius: 18,
+                offset: const Offset(0, -2),
               ),
             ],
             border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.16)
-                  : Colors.white.withValues(alpha: 0.85),
-              width: 1.0,
+              color: isDark ? Colors.white.withValues(alpha: 0.20) : Colors.white.withValues(alpha: 0.95),
+              width: 1.1,
             ),
           ),
           child: ListView(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             children: [
-              _btn(Icons.add_circle_outline, 'Add Block', onSurface, widget.onAddBlock),
-              _btn(Icons.check_box_outlined, 'Checklist', const Color(0xFF38BDF8), widget.onAddChecklist),
-              _btn(Icons.image_outlined, 'Add Image', const Color(0xFF4ADE80), _pickImage),
-              _btn(Icons.draw_outlined, 'Doodle', const Color(0xFFF472B6), () {
+              _btn(Icons.add_circle_outline, TextRegistry.get(TextKey.addBlock), onSurface, widget.onAddBlock),
+              _btn(Icons.title, TextRegistry.get(TextKey.addHeading), const Color(0xFF60A5FA), widget.onAddHeading),
+              _btn(Icons.check_box_outlined, TextRegistry.get(TextKey.checklistTask), const Color(0xFF38BDF8), widget.onAddChecklist),
+              _btn(Icons.image_outlined, TextRegistry.get(TextKey.addImage), const Color(0xFF4ADE80), _pickImage),
+              _btn(Icons.draw_outlined, TextRegistry.get(TextKey.addDoodle), const Color(0xFFF472B6), () {
                 TactileFeedback.medium();
                 DoodleCanvasModal.show(context, onSave: widget.onAddDoodle);
               }),
-              _btn(Icons.mic_none, 'Record Audio', const Color(0xFFF87171), _startRecording),
-              _btn(Icons.today_outlined, 'Today Date', const Color(0xFFFBBF24), widget.onInsertDate),
-              _btn(Icons.lightbulb_outline, 'Callout', const Color(0xFFA78BFA), widget.onAddCallout),
-              _btn(Icons.data_object, 'Code', const Color(0xFF818CF8), widget.onInsertCode),
-              _btn(Icons.format_quote_rounded, 'Quote', const Color(0xFFE879F9), widget.onAddQuote),
-              _btn(Icons.format_size, 'Format', onSurface, widget.onFormatText),
+              _btn(Icons.mic_none, TextRegistry.get(TextKey.recordVoice), const Color(0xFFF87171), _startRecording),
+              _btn(Icons.today_outlined, TextRegistry.get(TextKey.insertDate), const Color(0xFFFBBF24), widget.onInsertDate),
+              _btn(Icons.lightbulb_outline, TextRegistry.get(TextKey.addCallout), const Color(0xFFA78BFA), widget.onAddCallout),
+              _btn(Icons.data_object, TextRegistry.get(TextKey.insertCodeBlock), const Color(0xFF818CF8), widget.onInsertCode),
+              _btn(Icons.format_quote_rounded, TextRegistry.get(TextKey.addQuote), const Color(0xFFE879F9), widget.onAddQuote),
+              _btn(Icons.horizontal_rule, TextRegistry.get(TextKey.addDivider), const Color(0xFF94A3B8), widget.onAddDivider),
+              _btn(Icons.schema_outlined, TextRegistry.get(TextKey.addDiagram), const Color(0xFF2DD4BF), widget.onAddDiagram),
+              _btn(Icons.format_size, TextRegistry.get(TextKey.formatText), onSurface, widget.onFormatText),
             ],
           ),
         ),

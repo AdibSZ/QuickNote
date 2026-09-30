@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quicknote_core/quicknote_core.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/ui_kit/tactile_feedback.dart';
@@ -74,7 +75,7 @@ class _MobileSpeedDialFabState extends State<MobileSpeedDialFab>
         if (_isOpen) ...[
           _buildActionPill(
             icon: Icons.mic_rounded,
-            label: 'Voice Memo',
+            label: TextRegistry.get(TextKey.voiceMemo),
             color: const Color(0xFFFF9500),
             bgSurface: bgSurface,
             onSurface: onSurface,
@@ -83,7 +84,7 @@ class _MobileSpeedDialFabState extends State<MobileSpeedDialFab>
           const SizedBox(height: 10),
           _buildActionPill(
             icon: Icons.check_box_outlined,
-            label: 'Checklist',
+            label: TextRegistry.get(TextKey.toDoList),
             color: const Color(0xFF34C759),
             bgSurface: bgSurface,
             onSurface: onSurface,
@@ -92,7 +93,7 @@ class _MobileSpeedDialFabState extends State<MobileSpeedDialFab>
           const SizedBox(height: 10),
           _buildActionPill(
             icon: Icons.edit_note_rounded,
-            label: 'Text Note',
+            label: TextRegistry.get(TextKey.addBlock),
             color: primary,
             bgSurface: bgSurface,
             onSurface: onSurface,

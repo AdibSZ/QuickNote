@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:quicknote_core/quicknote_core.dart';
 import 'package:quicknote_notes/quicknote_notes.dart';
+import 'core/localization/locale_cubit.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
 import 'core/ui_kit/ambient_glass_background.dart';
@@ -17,21 +19,43 @@ class QuickNoteApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
+        BlocProvider<LocaleCubit>(create: (_) => LocaleCubit()),
         BlocProvider<NotesDirectoryCubit>(
           create: (_) => NotesDirectoryCubit(repository)..loadNotes(),
         ),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
-          return MaterialApp(
-            title: TextRegistry.get(TextKey.appName),
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: themeMode,
-            home: AmbientGlassBackground(
-              child: ResponsiveHomeScreen(repository: repository),
-            ),
+          return BlocBuilder<LocaleCubit, Locale>(
+            builder: (context, locale) {
+              final isFa = locale.languageCode == 'fa';
+              return MaterialApp(
+                title: TextRegistry.get(TextKey.appName),
+                debugShowCheckedModeBanner: false,
+                theme: AppTheme.lightTheme,
+                darkTheme: AppTheme.darkTheme,
+                themeMode: themeMode,
+                locale: locale,
+                supportedLocales: const [
+                  Locale('en'),
+                  Locale('fa'),
+                ],
+                localizationsDelegates: const [
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                builder: (context, child) {
+                  return Directionality(
+                    textDirection: isFa ? TextDirection.rtl : TextDirection.ltr,
+                    child: child ?? const SizedBox.shrink(),
+                  );
+                },
+                home: AmbientGlassBackground(
+                  child: ResponsiveHomeScreen(repository: repository),
+                ),
+              );
+            },
           );
         },
       ),

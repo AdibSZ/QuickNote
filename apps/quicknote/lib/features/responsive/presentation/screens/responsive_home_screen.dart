@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quicknote_core/quicknote_core.dart';
 import 'package:quicknote_notes/quicknote_notes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/ui_kit/app_emblem.dart';
@@ -85,31 +86,31 @@ class _ResponsiveHomeScreenState extends State<ResponsiveHomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
-                    AppEmblem(size: 30),
-                    SizedBox(width: 10),
-                    Text('QuickNote', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const AppEmblem(size: 30),
+                    const SizedBox(width: 10),
+                    Text(TextRegistry.get(TextKey.appName), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   ],
                 ),
                 const SizedBox(height: 24),
                 ResponsiveSidebarItem(
                   icon: Icons.notes,
-                  label: 'All Notes',
+                  label: TextRegistry.get(TextKey.allNotesTab),
                   count: state.allCount,
                   isSelected: state.selectedCategory == 'All',
                   onTap: () => context.read<NotesDirectoryCubit>().selectCategory('All'),
                 ),
                 ResponsiveSidebarItem(
                   icon: Icons.star_outline_rounded,
-                  label: 'Favorites',
+                  label: TextRegistry.get(TextKey.favoritesFilter),
                   count: state.favoritesCount,
                   isSelected: state.selectedCategory == 'Favorites',
                   onTap: () => context.read<NotesDirectoryCubit>().selectCategory('Favorites'),
                 ),
                 ResponsiveSidebarItem(
                   icon: Icons.push_pin_outlined,
-                  label: 'Pinned',
+                  label: TextRegistry.get(TextKey.pinnedFilter),
                   count: state.pinnedCount,
                   isSelected: state.selectedCategory == 'Pinned',
                   onTap: () => context.read<NotesDirectoryCubit>().selectCategory('Pinned'),
@@ -126,7 +127,7 @@ class _ResponsiveHomeScreenState extends State<ResponsiveHomeScreen> {
                 const Spacer(),
                 ResponsiveSidebarItem(
                   icon: Icons.settings_outlined,
-                  label: 'Settings',
+                  label: TextRegistry.get(TextKey.settingsTitle),
                   isSelected: false,
                   onTap: () => SettingsModal.show(context),
                 ),
