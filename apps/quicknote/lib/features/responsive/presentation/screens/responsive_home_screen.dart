@@ -6,7 +6,6 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/ui_kit/app_emblem.dart';
 import '../../../../core/ui_kit/glass_container.dart';
 import '../../../directory/presentation/screens/notes_directory_screen.dart';
-import '../../../directory/presentation/widgets/mobile_bottom_dock.dart';
 import '../../../directory/presentation/widgets/mobile_speed_dial_fab.dart';
 import '../../../directory/presentation/widgets/spotlight_search_modal.dart';
 import '../../../editor/presentation/screens/note_editor_screen.dart';
@@ -115,7 +114,7 @@ class _ResponsiveHomeScreenState extends State<ResponsiveHomeScreen> {
                   onTap: () => context.read<NotesDirectoryCubit>().selectCategory('Pinned'),
                 ),
                 ...state.availableCategories
-                    .where((c) => c != 'All' && c != 'Pinned' && c != 'Favorites' && c != 'Trash')
+                    .where((c) => c != 'All' && c != 'Pinned' && c != 'Favorites')
                     .map((cat) => ResponsiveSidebarItem(
                           icon: _iconForCategory(cat),
                           label: cat,
@@ -123,14 +122,6 @@ class _ResponsiveHomeScreenState extends State<ResponsiveHomeScreen> {
                           isSelected: state.selectedCategory.toLowerCase() == cat.toLowerCase(),
                           onTap: () => context.read<NotesDirectoryCubit>().selectCategory(cat),
                         )),
-                if (state.trashCount > 0)
-                  ResponsiveSidebarItem(
-                    icon: Icons.delete_outline,
-                    label: 'Trash',
-                    count: state.trashCount,
-                    isSelected: state.selectedCategory == 'Trash',
-                    onTap: () => context.read<NotesDirectoryCubit>().selectCategory('Trash'),
-                  ),
                 const Spacer(),
                 ResponsiveSidebarItem(
                   icon: Icons.settings_outlined,
@@ -202,14 +193,6 @@ class _ResponsiveHomeScreenState extends State<ResponsiveHomeScreen> {
                   onNewTextNote: _handleCreateNewNote,
                   onNewChecklistNote: _handleCreateChecklistNote,
                   onNewAudioNote: _handleCreateAudioNote,
-                ),
-                bottomNavigationBar: MobileBottomDock(
-                  selectedCategory: state.selectedCategory,
-                  allCount: state.allCount,
-                  favoritesCount: state.favoritesCount,
-                  trashCount: state.trashCount,
-                  onSelectCategory: (cat) => context.read<NotesDirectoryCubit>().selectCategory(cat),
-                  onOpenTags: () => context.read<NotesDirectoryCubit>().selectTab(DirectoryTab.tags),
                 ),
                 body: NotesDirectoryScreen(
                   onNoteSelected: (note) => setState(() => _activeNote = note),

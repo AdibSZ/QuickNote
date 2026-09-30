@@ -136,13 +136,8 @@ class NotesDirectoryCubit extends Cubit<NotesDirectoryState> {
   }
 
   Future<void> deleteNote(String id) async {
-    final note = _repository.getNoteById(id);
-    if (note != null && !note.isDeleted) {
-      await moveToTrash(id);
-    } else {
-      await _repository.deleteNote(id);
-      loadNotes();
-    }
+    await _repository.deleteNote(id);
+    loadNotes();
   }
 
   Future<Note?> duplicateNote(String id) async {

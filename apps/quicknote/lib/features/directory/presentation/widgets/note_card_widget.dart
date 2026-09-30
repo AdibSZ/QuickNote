@@ -271,7 +271,7 @@ class NoteCardWidget extends StatelessWidget {
                     () => NoteColorPickerModal.show(context, currentColor: note.color, onColorSelected: onColorSelected!)),
               if (onDuplicate != null)
                 _tile(ctx, Icons.copy_outlined, 'Duplicate Note', onDuplicate!),
-              _tile(ctx, Icons.delete_outline, 'Move to Trash', onDelete, color: Colors.redAccent),
+              _tile(ctx, Icons.delete_outline, 'Delete Note', onDelete, color: Colors.redAccent),
             ],
           ),
         );
