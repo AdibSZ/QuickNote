@@ -263,6 +263,8 @@ class NotesDirectoryScreen extends StatelessWidget {
               onColorSelected: (c) => context.read<NotesDirectoryCubit>().setNoteColor(note.id, c),
               onDelete: () => context.read<NotesDirectoryCubit>().deleteNote(note.id),
               onDuplicate: () => context.read<NotesDirectoryCubit>().duplicateNote(note.id),
+              onToggleLock: () => context.read<NotesDirectoryCubit>().toggleLock(note.id),
+              onSetReminder: (dt) => context.read<NotesDirectoryCubit>().setNoteReminder(note.id, dt),
             );
           },
           childCount: list.length,

@@ -16,6 +16,7 @@ class Note extends Equatable {
   final bool isFavorite;
   final bool isLocked;
   final bool isDeleted;
+  final DateTime? reminderAt;
   final List<NoteBlock> blocks;
 
   const Note({
@@ -29,6 +30,7 @@ class Note extends Equatable {
     this.isFavorite = false,
     this.isLocked = false,
     this.isDeleted = false,
+    this.reminderAt,
     required this.createdAt,
     required this.updatedAt,
     this.blocks = const [],
@@ -125,6 +127,8 @@ class Note extends Equatable {
     bool? isFavorite,
     bool? isLocked,
     bool? isDeleted,
+    DateTime? reminderAt,
+    bool clearReminder = false,
     DateTime? createdAt,
     DateTime? updatedAt,
     List<NoteBlock>? blocks,
@@ -140,6 +144,7 @@ class Note extends Equatable {
       isFavorite: isFavorite ?? this.isFavorite,
       isLocked: isLocked ?? this.isLocked,
       isDeleted: isDeleted ?? this.isDeleted,
+      reminderAt: clearReminder ? null : (reminderAt ?? this.reminderAt),
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       blocks: blocks ?? this.blocks,
@@ -158,6 +163,7 @@ class Note extends Equatable {
       'isFavorite': isFavorite,
       'isLocked': isLocked,
       'isDeleted': isDeleted,
+      'reminderAt': reminderAt?.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'blocks': blocks.map((b) => b.toJson()).toList(),
@@ -176,6 +182,9 @@ class Note extends Equatable {
       isFavorite: json['isFavorite'] as bool? ?? false,
       isLocked: json['isLocked'] as bool? ?? false,
       isDeleted: json['isDeleted'] as bool? ?? false,
+      reminderAt: json['reminderAt'] != null
+          ? DateTime.tryParse(json['reminderAt'] as String)
+          : null,
       createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
       blocks: (json['blocks'] as List? ?? [])
@@ -196,6 +205,7 @@ class Note extends Equatable {
         isFavorite,
         isLocked,
         isDeleted,
+        reminderAt,
         createdAt,
         updatedAt,
         blocks,

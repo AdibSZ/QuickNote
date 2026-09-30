@@ -6,6 +6,8 @@ import '../../../../core/theme/text_direction_helper.dart';
 import '../../../../core/ui_kit/glass_card.dart';
 import '../../../../core/ui_kit/tactile_feedback.dart';
 import '../../../editor/presentation/widgets/note_color_picker_modal.dart';
+import '../../../security/presentation/widgets/note_security_modal.dart';
+import 'note_card_context_menu.dart';
 
 class NoteCardWidget extends StatelessWidget {
   final Note note;
@@ -15,6 +17,8 @@ class NoteCardWidget extends StatelessWidget {
   final VoidCallback onDelete;
   final VoidCallback? onDuplicate;
   final ValueChanged<String?>? onColorSelected;
+  final VoidCallback? onToggleLock;
+  final ValueChanged<DateTime?>? onSetReminder;
 
   const NoteCardWidget({
     super.key,
@@ -25,6 +29,8 @@ class NoteCardWidget extends StatelessWidget {
     required this.onDelete,
     this.onDuplicate,
     this.onColorSelected,
+    this.onToggleLock,
+    this.onSetReminder,
   });
 
   Color _colorForCategory(String cat, bool isDark) {
@@ -64,7 +70,13 @@ class NoteCardWidget extends StatelessWidget {
         : null;
 
     final card = GlassCard(
-      onTap: onTap,
+      onTap: () {
+        if (note.isLocked) {
+          NoteSecurityModal.show(context, noteTitle: note.title, onAuthenticated: onTap);
+        } else {
+          onTap();
+        }
+      },
       onLongPress: () => _showContextMenu(context),
       padding: const EdgeInsets.all(14),
       borderRadius: BorderRadius.circular(16),
@@ -99,6 +111,11 @@ class NoteCardWidget extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.only(right: 6),
                             child: Icon(Icons.lock_outline, size: 13, color: onSurfaceVar),
+                          ),
+                        if (note.reminderAt != null)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: Icon(Icons.alarm_on_rounded, size: 14, color: primary),
                           ),
                         if (showCategory)
                           Container(
@@ -246,48 +263,16 @@ class NoteCardWidget extends StatelessWidget {
   }
 
   void _showContextMenu(BuildContext context) {
-    showModalBottomSheet(
+    NoteCardContextMenu.show(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        final isDark = Theme.of(ctx).brightness == Brightness.dark;
-        return Container(
-          margin: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurfaceContainerHighest : AppColors.lightSurfaceContainerHighest,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: isDark ? AppColors.darkHairlineBorder : AppColors.lightHairlineBorder, width: 0.5),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _tile(ctx, note.isPinned ? Icons.push_pin_outlined : Icons.push_pin, note.isPinned ? 'Unpin' : 'Pin to Top', onTogglePin),
-              if (onToggleFavorite != null)
-                _tile(ctx, note.isFavorite ? Icons.star_border_rounded : Icons.star_rounded,
-                    note.isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onToggleFavorite!,
-                    color: const Color(0xFFFFCC00)),
-              if (onColorSelected != null)
-                _tile(ctx, Icons.palette_outlined, 'Note Tint Theme',
-                    () => NoteColorPickerModal.show(context, currentColor: note.color, onColorSelected: onColorSelected!)),
-              if (onDuplicate != null)
-                _tile(ctx, Icons.copy_outlined, 'Duplicate Note', onDuplicate!),
-              _tile(ctx, Icons.delete_outline, 'Delete Note', onDelete, color: Colors.redAccent),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _tile(BuildContext ctx, IconData icon, String title, VoidCallback onTap, {Color? color}) {
-    return ListTile(
-      dense: true,
-      leading: Icon(icon, color: color, size: 20),
-      title: Text(title, style: color != null ? TextStyle(color: color) : null),
-      onTap: () {
-        Navigator.pop(ctx);
-        onTap();
-      },
+      note: note,
+      onTogglePin: onTogglePin,
+      onToggleFavorite: onToggleFavorite,
+      onColorSelected: onColorSelected,
+      onDuplicate: onDuplicate,
+      onDelete: onDelete,
+      onToggleLock: onToggleLock,
+      onSetReminder: onSetReminder,
     );
   }
 }

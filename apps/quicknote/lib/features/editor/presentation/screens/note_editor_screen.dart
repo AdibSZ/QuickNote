@@ -4,6 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quicknote_notes/quicknote_notes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/ui_kit/tactile_feedback.dart';
+import '../../../reminders/presentation/widgets/note_reminder_modal.dart';
+import '../../../security/presentation/widgets/note_security_modal.dart';
+import '../../../sharing/presentation/widgets/aesthetic_card_modal.dart';
+import '../../../zen/presentation/widgets/zen_mode_modal.dart';
 import '../widgets/editor_header.dart';
 import '../widgets/docked_bottom_bar.dart';
 import '../widgets/block_format_sheet.dart';
@@ -14,6 +18,7 @@ import '../widgets/blocks/title_block_widget.dart';
 import '../widgets/block_item_builder.dart';
 import '../widgets/export_note_modal.dart';
 import '../widgets/animated_block_entry.dart';
+import '../widgets/keyboard_accessory_toolbar.dart';
 
 class NoteEditorScreen extends StatelessWidget {
   final VoidCallback onBack;
@@ -70,7 +75,25 @@ class NoteEditorScreen extends StatelessWidget {
                       noteColor: state.note.color,
                       onTogglePin: () => cubit.togglePin(),
                       onToggleFavorite: () => cubit.toggleFavorite(),
-                      onToggleLock: () => cubit.toggleLock(),
+                      onToggleLock: () {
+                        if (state.note.isLocked) {
+                          NoteSecurityModal.show(
+                            context,
+                            noteTitle: state.note.title,
+                            onAuthenticated: () => cubit.toggleLock(),
+                          );
+                        } else {
+                          cubit.toggleLock();
+                        }
+                      },
+                      onZenMode: () => ZenModeModal.show(context, state.note),
+                      onShareAesthetic: () => AestheticCardModal.show(context, state.note),
+                      onReminder: () => NoteReminderModal.show(
+                        context,
+                        currentReminder: state.note.reminderAt,
+                        onSave: (dt) => cubit.setReminder(dt),
+                      ),
+                      hasReminder: state.note.reminderAt != null,
                       onPickColor: () => NoteColorPickerModal.show(
                         context,
                         currentColor: state.note.color,
@@ -199,6 +222,12 @@ class NoteEditorScreen extends StatelessWidget {
                 bottom: 85,
                 right: 20,
                 child: EditorStatsHud(note: state.note),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: MediaQuery.paddingOf(context).bottom + 65,
+                child: KeyboardAccessoryToolbar(cubit: cubit),
               ),
               Positioned(
                 left: 0,

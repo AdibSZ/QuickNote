@@ -107,6 +107,17 @@ class NotesDirectoryCubit extends Cubit<NotesDirectoryState> {
     loadNotes();
   }
 
+  Future<void> setNoteReminder(String id, DateTime? reminderAt) async {
+    final note = _repository.getNoteById(id);
+    if (note == null) return;
+    await _repository.saveNote(note.copyWith(
+      reminderAt: reminderAt,
+      clearReminder: reminderAt == null,
+      updatedAt: DateTime.now(),
+    ));
+    loadNotes();
+  }
+
   Future<void> moveToTrash(String id) async {
     final note = _repository.getNoteById(id);
     if (note == null) return;

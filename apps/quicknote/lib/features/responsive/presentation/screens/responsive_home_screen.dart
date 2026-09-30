@@ -9,6 +9,7 @@ import '../../../directory/presentation/screens/notes_directory_screen.dart';
 import '../../../directory/presentation/widgets/mobile_speed_dial_fab.dart';
 import '../../../directory/presentation/widgets/spotlight_search_modal.dart';
 import '../../../editor/presentation/screens/note_editor_screen.dart';
+import '../../../security/presentation/widgets/note_security_modal.dart';
 import '../../../settings/presentation/settings_modal.dart';
 import '../widgets/empty_editor_placeholder.dart';
 import '../widgets/sidebar_item.dart';
@@ -136,7 +137,7 @@ class _ResponsiveHomeScreenState extends State<ResponsiveHomeScreen> {
           SizedBox(
             width: 420,
             child: NotesDirectoryScreen(
-              onNoteSelected: (note) => setState(() => _activeNote = note),
+              onNoteSelected: _selectNote,
               onNewNote: _handleCreateNewNote,
             ),
           ),
@@ -155,7 +156,7 @@ class _ResponsiveHomeScreenState extends State<ResponsiveHomeScreen> {
           SizedBox(
             width: 360,
             child: NotesDirectoryScreen(
-              onNoteSelected: (note) => setState(() => _activeNote = note),
+              onNoteSelected: _selectNote,
               onNewNote: _handleCreateNewNote,
             ),
           ),
@@ -195,7 +196,7 @@ class _ResponsiveHomeScreenState extends State<ResponsiveHomeScreen> {
                   onNewAudioNote: _handleCreateAudioNote,
                 ),
                 body: NotesDirectoryScreen(
-                  onNoteSelected: (note) => setState(() => _activeNote = note),
+                  onNoteSelected: _selectNote,
                   onNewNote: _handleCreateNewNote,
                 ),
               ),
@@ -213,6 +214,21 @@ class _ResponsiveHomeScreenState extends State<ResponsiveHomeScreen> {
         onDelete: () => _handleDeleteNote(_activeNote!.id),
       ),
     );
+  }
+
+  void _selectNote(Note note) {
+    if (note.isLocked) {
+      NoteSecurityModal.show(
+        context,
+        noteTitle: note.title,
+        onAuthenticated: () {
+          if (!mounted) return;
+          setState(() => _activeNote = note);
+        },
+      );
+    } else {
+      setState(() => _activeNote = note);
+    }
   }
 
   Future<void> _handleCreateNewNote() async {

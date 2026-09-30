@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/theme_cubit.dart';
 import '../../../../core/ui_kit/tactile_feedback.dart';
+import '../../backup/presentation/widgets/backup_restore_modal.dart';
 
 class SettingsModal extends StatelessWidget {
   const SettingsModal({super.key});
@@ -105,6 +106,17 @@ class SettingsModal extends StatelessWidget {
               // Actions
               Text('BACKUP & EXPORT', style: AppTypography.caption(onSurfaceVar, size: 10, weight: FontWeight.w700)),
               const SizedBox(height: 8),
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.cloud_sync_outlined, color: Color(0xFF0A84FF), size: 20),
+                title: const Text('پشتیبان‌گیری و بازیابی محلی'),
+                subtitle: const Text('تهیه خروجی کامل یا بازیابی یادداشت‌ها از فایل پشتیبان'),
+                onTap: () {
+                  Navigator.pop(context);
+                  BackupRestoreModal.show(context);
+                },
+              ),
               ListTile(
                 dense: true,
                 contentPadding: EdgeInsets.zero,

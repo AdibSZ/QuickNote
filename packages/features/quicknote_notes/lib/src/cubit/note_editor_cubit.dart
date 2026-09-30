@@ -91,6 +91,16 @@ class NoteEditorCubit extends Cubit<NoteEditorState> {
     await _repository.saveNote(updatedNote);
   }
 
+  Future<void> setReminder(DateTime? reminderAt) async {
+    final updatedNote = state.note.copyWith(
+      reminderAt: reminderAt,
+      clearReminder: reminderAt == null,
+      updatedAt: DateTime.now(),
+    );
+    emit(state.copyWith(note: updatedNote));
+    await _repository.saveNote(updatedNote);
+  }
+
   final List<List<NoteBlock>> _undoStack = [];
   final List<List<NoteBlock>> _redoStack = [];
 

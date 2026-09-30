@@ -21,4 +21,8 @@ class TactileFeedback {
   static void heavy() {
     HapticFeedback.heavyImpact();
   }
+
+  static void success() {
+    HapticFeedback.mediumImpact();
+  }
 }

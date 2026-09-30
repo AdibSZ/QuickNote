@@ -19,6 +19,10 @@ class EditorHeader extends StatelessWidget {
   final VoidCallback? onPickColor;
   final VoidCallback? onDeleteNote;
   final VoidCallback? onExport;
+  final VoidCallback? onZenMode;
+  final VoidCallback? onShareAesthetic;
+  final VoidCallback? onReminder;
+  final bool hasReminder;
   final VoidCallback? onUndo;
   final VoidCallback? onRedo;
   final int wordCount;
@@ -38,6 +42,10 @@ class EditorHeader extends StatelessWidget {
     this.onPickColor,
     this.onDeleteNote,
     this.onExport,
+    this.onZenMode,
+    this.onShareAesthetic,
+    this.onReminder,
+    this.hasReminder = false,
     this.onUndo,
     this.onRedo,
     this.wordCount = 0,
@@ -180,6 +188,37 @@ class EditorHeader extends StatelessWidget {
                   ),
                   tooltip: isLocked ? 'Unlock Note' : 'Lock Note',
                   onPressed: onToggleLock,
+                ),
+                const SizedBox(width: 4),
+              ],
+              if (onZenMode != null) ...[
+                GlassIconButton(
+                  size: 34,
+                  icon: Icon(Icons.self_improvement, size: 18, color: onSurfaceVar),
+                  tooltip: 'Zen Mode (حالت تمرکز)',
+                  onPressed: onZenMode,
+                ),
+                const SizedBox(width: 4),
+              ],
+              if (onShareAesthetic != null) ...[
+                GlassIconButton(
+                  size: 34,
+                  icon: const Icon(Icons.auto_awesome_outlined, size: 17, color: Color(0xFFA855F7)),
+                  tooltip: 'Share Card (کارت شیک)',
+                  onPressed: onShareAesthetic,
+                ),
+                const SizedBox(width: 4),
+              ],
+              if (onReminder != null) ...[
+                GlassIconButton(
+                  size: 34,
+                  icon: Icon(
+                    hasReminder ? Icons.alarm_on_rounded : Icons.alarm_outlined,
+                    size: 17,
+                    color: hasReminder ? const Color(0xFF34C759) : onSurfaceVar,
+                  ),
+                  tooltip: 'Reminder (یادآور)',
+                  onPressed: onReminder,
                 ),
                 const SizedBox(width: 4),
               ],
