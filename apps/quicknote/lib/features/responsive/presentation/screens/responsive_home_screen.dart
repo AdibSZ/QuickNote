@@ -3,13 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quicknote_notes/quicknote_notes.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
 import '../../../../core/ui_kit/app_emblem.dart';
 import '../../../../core/ui_kit/glass_container.dart';
 import '../../../directory/presentation/screens/notes_directory_screen.dart';
+import '../../../directory/presentation/widgets/mobile_bottom_dock.dart';
+import '../../../directory/presentation/widgets/mobile_speed_dial_fab.dart';
 import '../../../directory/presentation/widgets/spotlight_search_modal.dart';
 import '../../../editor/presentation/screens/note_editor_screen.dart';
 import '../../../settings/presentation/settings_modal.dart';
+import '../widgets/empty_editor_placeholder.dart';
 import '../widgets/sidebar_item.dart';
 
 class ResponsiveHomeScreen extends StatefulWidget {
@@ -194,16 +196,32 @@ class _ResponsiveHomeScreenState extends State<ResponsiveHomeScreen> {
             )
           : KeyedSubtree(
               key: const ValueKey('directory'),
-              child: NotesDirectoryScreen(
-                onNoteSelected: (note) => setState(() => _activeNote = note),
-                onNewNote: _handleCreateNewNote,
+              child: Scaffold(
+                backgroundColor: Colors.transparent,
+                floatingActionButton: MobileSpeedDialFab(
+                  onNewTextNote: _handleCreateNewNote,
+                  onNewChecklistNote: _handleCreateChecklistNote,
+                  onNewAudioNote: _handleCreateAudioNote,
+                ),
+                bottomNavigationBar: MobileBottomDock(
+                  selectedCategory: state.selectedCategory,
+                  allCount: state.allCount,
+                  favoritesCount: state.favoritesCount,
+                  trashCount: state.trashCount,
+                  onSelectCategory: (cat) => context.read<NotesDirectoryCubit>().selectCategory(cat),
+                  onOpenTags: () => context.read<NotesDirectoryCubit>().selectTab(DirectoryTab.tags),
+                ),
+                body: NotesDirectoryScreen(
+                  onNoteSelected: (note) => setState(() => _activeNote = note),
+                  onNewNote: _handleCreateNewNote,
+                ),
               ),
             ),
     );
   }
 
   Widget _buildEditorStage(BuildContext context, {VoidCallback? onBack}) {
-    if (_activeNote == null) return _buildEmptyEditorPlaceholder(context);
+    if (_activeNote == null) return EmptyEditorPlaceholder(onCreateNote: _handleCreateNewNote);
     return BlocProvider(
       key: ValueKey(_activeNote!.id),
       create: (_) => NoteEditorCubit(note: _activeNote!, repository: widget.repository),
@@ -214,39 +232,20 @@ class _ResponsiveHomeScreenState extends State<ResponsiveHomeScreen> {
     );
   }
 
-  Widget _buildEmptyEditorPlaceholder(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final onSurface = isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
-    final onSurfaceVar = isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant;
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.edit_note, size: 56, color: onSurfaceVar.withValues(alpha: 0.4)),
-          const SizedBox(height: 12),
-          Text('No Note Selected', style: AppTypography.title(onSurface, size: 16)),
-          const SizedBox(height: 6),
-          Text('Create a new note to start writing', style: AppTypography.body(onSurfaceVar, size: 13)),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: _handleCreateNewNote,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isDark ? AppColors.darkPrimaryContainer : AppColors.lightPrimary,
-              foregroundColor: isDark ? AppColors.darkOnPrimaryContainer : Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-            ),
-            icon: const Icon(Icons.add, size: 18),
-            label: const Text('Create New Note'),
-          ),
-        ],
-      ),
-    );
+  Future<void> _handleCreateNewNote() async {
+    final note = await context.read<NotesDirectoryCubit>().createNewNote();
+    if (!mounted) return;
+    setState(() => _activeNote = note);
   }
 
-  Future<void> _handleCreateNewNote() async {
-    final cubit = context.read<NotesDirectoryCubit>();
-    final note = await cubit.createNewNote();
+  Future<void> _handleCreateChecklistNote() async {
+    final note = await context.read<NotesDirectoryCubit>().createChecklistNote();
+    if (!mounted) return;
+    setState(() => _activeNote = note);
+  }
+
+  Future<void> _handleCreateAudioNote() async {
+    final note = await context.read<NotesDirectoryCubit>().createVoiceMemoNote();
     if (!mounted) return;
     setState(() => _activeNote = note);
   }

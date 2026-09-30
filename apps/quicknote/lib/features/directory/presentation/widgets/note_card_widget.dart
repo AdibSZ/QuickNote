@@ -4,7 +4,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/text_direction_helper.dart';
 import '../../../../core/ui_kit/glass_card.dart';
-
+import '../../../../core/ui_kit/tactile_feedback.dart';
 import '../../../editor/presentation/widgets/note_color_picker_modal.dart';
 
 class NoteCardWidget extends StatelessWidget {
@@ -38,11 +38,10 @@ class NoteCardWidget extends StatelessWidget {
   }
 
   String _formatTime(DateTime dt) {
-    final diff = DateTime.now().difference(dt);
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    if (diff.inDays == 1) return 'Yesterday';
-    return '${dt.month}/${dt.day}';
+    final d = DateTime.now().difference(dt);
+    if (d.inMinutes < 60) return '${d.inMinutes}m ago';
+    if (d.inHours < 24) return '${d.inHours}h ago';
+    return d.inDays == 1 ? 'Yesterday' : '${dt.month}/${dt.day}';
   }
 
   @override
@@ -64,7 +63,7 @@ class NoteCardWidget extends StatelessWidget {
         ? NoteColorPickerModal.getAccentColor(note.color, isDark)
         : null;
 
-    return GlassCard(
+    final card = GlassCard(
       onTap: onTap,
       onLongPress: () => _showContextMenu(context),
       padding: const EdgeInsets.all(14),
@@ -195,6 +194,39 @@ class NoteCardWidget extends StatelessWidget {
         ],
       ),
     );
+
+    return Dismissible(
+      key: ValueKey('dismiss-${note.id}'),
+      background: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFCC00).withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 18),
+        child: Icon(note.isFavorite ? Icons.star_border_rounded : Icons.star_rounded, color: const Color(0xFFFFCC00), size: 22),
+      ),
+      secondaryBackground: Container(
+        decoration: BoxDecoration(
+          color: Colors.redAccent.withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 18),
+        child: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 22),
+      ),
+      confirmDismiss: (dir) async {
+        TactileFeedback.selection();
+        if (dir == DismissDirection.startToEnd) {
+          onToggleFavorite?.call();
+          return false;
+        } else {
+          onDelete();
+          return true;
+        }
+      },
+      child: card,
+    );
   }
 
   Widget _buildMetaStats(bool isDark, Color outline) {
@@ -235,9 +267,8 @@ class NoteCardWidget extends StatelessWidget {
                     note.isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onToggleFavorite!,
                     color: const Color(0xFFFFCC00)),
               if (onColorSelected != null)
-                _tile(ctx, Icons.palette_outlined, 'Note Tint Theme', () {
-                  NoteColorPickerModal.show(context, currentColor: note.color, onColorSelected: onColorSelected!);
-                }),
+                _tile(ctx, Icons.palette_outlined, 'Note Tint Theme',
+                    () => NoteColorPickerModal.show(context, currentColor: note.color, onColorSelected: onColorSelected!)),
               if (onDuplicate != null)
                 _tile(ctx, Icons.copy_outlined, 'Duplicate Note', onDuplicate!),
               _tile(ctx, Icons.delete_outline, 'Move to Trash', onDelete, color: Colors.redAccent),

@@ -101,53 +101,77 @@ class _AudioMemoBlockWidgetState extends State<AudioMemoBlockWidget> {
 
   Future<void> _toggleRecord() async {
     TactileFeedback.medium();
-    if (_isRecording) {
-      _timer?.cancel();
-      final path = await _audioService.stopRecording();
-      setState(() {
-        _isRecording = false;
-        _totalSeconds = _recordSeconds > 0 ? _recordSeconds : 5;
-        _recordSeconds = 0;
-        _dynamicAmps = List.filled(30, 0.35);
-      });
-      widget.block.metadata['durationSeconds'] = _totalSeconds;
-      if (path != null) {
-        widget.block.metadata['audioPath'] = path;
-      }
-    } else {
-      if (_isPlaying) {
-        await _audioService.stopPlayback();
-      }
-      final started = await _audioService.startRecording();
-      if (!mounted) return;
-      if (!started) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Microphone permission required for voice notes'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-        return;
-      }
-      setState(() {
-        _isRecording = true;
-        _recordSeconds = 0;
-      });
-      _timer?.cancel();
-      _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+    try {
+      if (_isRecording) {
+        _timer?.cancel();
+        final path = await _audioService.stopRecording();
         if (!mounted) return;
-        setState(() => _recordSeconds++);
-      });
+        setState(() {
+          _isRecording = false;
+          _totalSeconds = _recordSeconds > 0 ? _recordSeconds : 5;
+          _recordSeconds = 0;
+          _dynamicAmps = List.filled(30, 0.35);
+        });
+        widget.block.metadata['durationSeconds'] = _totalSeconds;
+        if (path != null) {
+          widget.block.metadata['audioPath'] = path;
+        }
+      } else {
+        if (_isPlaying) {
+          await _audioService.stopPlayback();
+        }
+        final started = await _audioService.startRecording();
+        if (!mounted) return;
+        if (!started) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('دسترسی به میکروفون داده نشده است'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          return;
+        }
+        setState(() {
+          _isRecording = true;
+          _recordSeconds = 0;
+        });
+        _timer?.cancel();
+        _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+          if (!mounted) return;
+          setState(() => _recordSeconds++);
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      _timer?.cancel();
+      setState(() => _isRecording = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('خطا در ضبط صدا: $e'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
   }
 
   Future<void> _togglePlay() async {
     TactileFeedback.light();
     if (_isRecording) return;
-    if (_isPlaying) {
-      await _audioService.pausePlayback();
-    } else {
-      await _audioService.startPlayback();
+    try {
+      if (_isPlaying) {
+        await _audioService.pausePlayback();
+      } else {
+        await _audioService.startPlayback();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isPlaying = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('خطا در پخش صدا: $e'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
   }
 

@@ -204,4 +204,62 @@ class NotesDirectoryCubit extends Cubit<NotesDirectoryState> {
     loadNotes();
     return newNote;
   }
+
+  Future<Note> createChecklistNote({String? title}) async {
+    final now = DateTime.now();
+    final newNote = Note(
+      id: 'note-${now.millisecondsSinceEpoch}',
+      title: title ?? 'To-Do List',
+      preview: 'Checklist task',
+      category: 'Tasks',
+      createdAt: now,
+      updatedAt: now,
+      blocks: [
+        NoteBlock(
+          id: 'blk-title-${now.microsecondsSinceEpoch}',
+          type: BlockType.title,
+          content: title ?? 'To-Do List',
+          metadata: const {'subtitle': 'Task Checklist', 'tag1': 'Tasks'},
+        ),
+        NoteBlock(
+          id: 'blk-chk-${now.microsecondsSinceEpoch + 1}',
+          type: BlockType.checklist,
+          content: '',
+          metadata: const {'isChecked': false},
+        ),
+      ],
+    );
+    await _repository.saveNote(newNote);
+    loadNotes();
+    return newNote;
+  }
+
+  Future<Note> createVoiceMemoNote({String? title}) async {
+    final now = DateTime.now();
+    final newNote = Note(
+      id: 'note-${now.millisecondsSinceEpoch}',
+      title: title ?? 'Voice Memo',
+      preview: 'Voice recording',
+      category: 'Audio',
+      createdAt: now,
+      updatedAt: now,
+      blocks: [
+        NoteBlock(
+          id: 'blk-title-${now.microsecondsSinceEpoch}',
+          type: BlockType.title,
+          content: title ?? 'Voice Memo',
+          metadata: const {'subtitle': 'Recorded Audio', 'tag1': 'Audio'},
+        ),
+        NoteBlock(
+          id: 'blk-audio-${now.microsecondsSinceEpoch + 1}',
+          type: BlockType.audioMemo,
+          content: 'Voice Note',
+          metadata: const {'durationSeconds': 0},
+        ),
+      ],
+    );
+    await _repository.saveNote(newNote);
+    loadNotes();
+    return newNote;
+  }
 }
