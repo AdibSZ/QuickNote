@@ -4,6 +4,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/ui_kit/app_emblem.dart';
 import '../../../../core/ui_kit/glass_container.dart';
 import '../../../../core/ui_kit/glass_icon_button.dart';
+import 'editor_more_menu_sheet.dart';
 
 class EditorHeader extends StatelessWidget {
   final VoidCallback onBack;
@@ -109,14 +110,9 @@ class EditorHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Flexible(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              reverse: true,
-              physics: const BouncingScrollPhysics(),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
               GlassIconButton(
                 size: 34,
                 icon: Icon(
@@ -139,107 +135,28 @@ class EditorHeader extends StatelessWidget {
                 onPressed: onRedo,
               ),
               const SizedBox(width: 4),
-              if (onToggleFavorite != null) ...[
-                GlassIconButton(
-                  size: 34,
-                  icon: Icon(
-                    isFavorite ? Icons.star_rounded : Icons.star_outline_rounded,
-                    size: 19,
-                    color: isFavorite ? const Color(0xFFFFCC00) : onSurfaceVar,
-                  ),
-                  tooltip: isFavorite ? 'Favorited' : 'Favorite',
-                  onPressed: onToggleFavorite,
+              GlassIconButton(
+                size: 34,
+                icon: Icon(Icons.more_horiz, size: 20, color: onSurface),
+                tooltip: 'Options',
+                onPressed: () => EditorMoreMenuSheet.show(
+                  context,
+                  isPinned: isPinned,
+                  isFavorite: isFavorite,
+                  isLocked: isLocked,
+                  hasReminder: hasReminder,
+                  onTogglePin: onTogglePin,
+                  onToggleFavorite: onToggleFavorite,
+                  onToggleLock: onToggleLock,
+                  onPickColor: onPickColor,
+                  onZenMode: onZenMode,
+                  onShareAesthetic: onShareAesthetic,
+                  onReminder: onReminder,
+                  onExport: onExport,
+                  onDeleteNote: onDeleteNote,
                 ),
-                const SizedBox(width: 4),
-              ],
-              if (onTogglePin != null) ...[
-                GlassIconButton(
-                  size: 34,
-                  icon: Icon(
-                    isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-                    size: 17,
-                    color: isPinned ? primary : onSurfaceVar,
-                  ),
-                  tooltip: isPinned ? 'Unpin' : 'Pin',
-                  onPressed: onTogglePin,
-                ),
-                const SizedBox(width: 4),
-              ],
-              if (onPickColor != null) ...[
-                GlassIconButton(
-                  size: 34,
-                  icon: Icon(
-                    Icons.palette_outlined,
-                    size: 17,
-                    color: onSurfaceVar,
-                  ),
-                  tooltip: 'Color Tint',
-                  onPressed: onPickColor,
-                ),
-                const SizedBox(width: 4),
-              ],
-              if (onToggleLock != null) ...[
-                GlassIconButton(
-                  size: 34,
-                  icon: Icon(
-                    isLocked ? Icons.lock : Icons.lock_open_outlined,
-                    size: 17,
-                    color: isLocked ? primary : onSurfaceVar,
-                  ),
-                  tooltip: isLocked ? 'Unlock Note' : 'Lock Note',
-                  onPressed: onToggleLock,
-                ),
-                const SizedBox(width: 4),
-              ],
-              if (onZenMode != null) ...[
-                GlassIconButton(
-                  size: 34,
-                  icon: Icon(Icons.self_improvement, size: 18, color: onSurfaceVar),
-                  tooltip: 'Zen Mode',
-                  onPressed: onZenMode,
-                ),
-                const SizedBox(width: 4),
-              ],
-              if (onShareAesthetic != null) ...[
-                GlassIconButton(
-                  size: 34,
-                  icon: const Icon(Icons.auto_awesome_outlined, size: 17, color: Color(0xFFA855F7)),
-                  tooltip: 'Share Card',
-                  onPressed: onShareAesthetic,
-                ),
-                const SizedBox(width: 4),
-              ],
-              if (onReminder != null) ...[
-                GlassIconButton(
-                  size: 34,
-                  icon: Icon(
-                    hasReminder ? Icons.alarm_on_rounded : Icons.alarm_outlined,
-                    size: 17,
-                    color: hasReminder ? const Color(0xFF34C759) : onSurfaceVar,
-                  ),
-                  tooltip: 'Reminder',
-                  onPressed: onReminder,
-                ),
-                const SizedBox(width: 4),
-              ],
-              if (onExport != null) ...[
-                GlassIconButton(
-                  size: 34,
-                  icon: Icon(Icons.ios_share_outlined, size: 17, color: onSurfaceVar),
-                  tooltip: 'Share / Copy Markdown',
-                  onPressed: onExport,
-                ),
-                const SizedBox(width: 4),
-              ],
-              if (onDeleteNote != null) ...[
-                GlassIconButton(
-                  size: 34,
-                  icon: const Icon(Icons.delete_outline, size: 18, color: Colors.redAccent),
-                  tooltip: 'Delete Note',
-                  onPressed: () => _confirmDelete(context),
-                ),
-                const SizedBox(width: 4),
-              ],
+              ),
+              const SizedBox(width: 6),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
@@ -268,28 +185,6 @@ class EditorHeader extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-        ),
-      ),
-    ],
-  ),
-);
-  }
-
-  void _confirmDelete(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Note'),
-        content: const Text('Are you sure you want to delete this note? This action cannot be undone.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              onDeleteNote?.call();
-            },
-            child: const Text('Delete', style: TextStyle(color: Colors.redAccent)),
           ),
         ],
       ),
