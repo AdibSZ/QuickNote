@@ -57,14 +57,14 @@ class _AestheticCardModalState extends State<AestheticCardModal> {
 
   void _copyCardContent() {
     TactileFeedback.selection();
-    final text = '✨ ${widget.note.title.isEmpty ? "یادداشت" : widget.note.title}\n\n'
+    final text = '✨ ${widget.note.title.isEmpty ? "Note" : widget.note.title}\n\n'
         '${widget.note.toPlainText()}\n\n'
         '#${widget.note.category} • QuickNote';
     Clipboard.setData(ClipboardData(text: text));
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('متن کارت برای اشتراک‌گذاری در کلیپ‌بورد کپی شد ✨'),
+        content: Text('Aesthetic card copied to clipboard ✨'),
         duration: Duration(seconds: 2),
       ),
     );
@@ -89,7 +89,7 @@ class _AestheticCardModalState extends State<AestheticCardModal> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('کارت گرافیکی اشتراک‌گذاری', style: AppTypography.title(Colors.white, size: 16)),
+              Text('Share as Aesthetic Card', style: AppTypography.title(Colors.white, size: 16)),
               IconButton(
                 icon: const Icon(Icons.close, color: Colors.white70, size: 20),
                 onPressed: () => Navigator.pop(context),
@@ -212,7 +212,7 @@ class _AestheticCardModalState extends State<AestheticCardModal> {
             child: ElevatedButton.icon(
               onPressed: _copyCardContent,
               icon: const Icon(Icons.share_outlined, size: 18),
-              label: const Text('اشتراک‌گذاری و کپی متن کارت'),
+              label: const Text('Share & Copy Card Text'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: accent,
                 foregroundColor: Colors.white,

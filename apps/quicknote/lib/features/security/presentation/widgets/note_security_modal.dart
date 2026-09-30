@@ -71,7 +71,7 @@ class _NoteSecurityModalState extends State<NoteSecurityModal> with SingleTicker
       TactileFeedback.heavy();
       setState(() {
         _isError = true;
-        _errorMessage = 'رمز عبور نادرست است (پیش‌فرض: 1234)';
+        _errorMessage = 'Incorrect PIN (Default: 1234)';
       });
       _pinController.clear();
     }
@@ -141,19 +141,19 @@ class _NoteSecurityModalState extends State<NoteSecurityModal> with SingleTicker
             ),
             const SizedBox(height: 16),
             Text(
-              'قفل امنیتی بیومتریک',
+              'Biometric Security',
               style: AppTypography.title(onSurface, size: 18, weight: FontWeight.bold),
             ),
             const SizedBox(height: 6),
             Text(
-              widget.noteTitle.isEmpty ? 'یادداشت خصوصی' : widget.noteTitle,
+              widget.noteTitle.isEmpty ? 'Private Note' : widget.noteTitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppTypography.body(primary, size: 13, weight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Text(
-              'سنسور اثر انگشت را لمس کنید یا کد ۴ رقمی را وارد نمایید',
+              'Touch fingerprint sensor or enter your 4-digit PIN',
               textAlign: TextAlign.center,
               style: AppTypography.caption(onSurfaceVar, size: 11),
             ),
@@ -207,7 +207,7 @@ class _NoteSecurityModalState extends State<NoteSecurityModal> with SingleTicker
                 TextButton.icon(
                   onPressed: _triggerBiometric,
                   icon: const Icon(Icons.fingerprint, size: 18),
-                  label: const Text('تأیید فوری با اثر انگشت'),
+                  label: const Text('Touch to Unlock with Biometrics'),
                   style: TextButton.styleFrom(foregroundColor: primary),
                 ),
               ],

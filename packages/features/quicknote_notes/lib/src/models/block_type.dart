@@ -9,4 +9,6 @@ enum BlockType {
   callout,
   quote,
   divider,
+  image,
+  doodle,
 }

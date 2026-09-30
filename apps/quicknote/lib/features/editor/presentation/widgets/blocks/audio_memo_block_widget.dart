@@ -125,7 +125,7 @@ class _AudioMemoBlockWidgetState extends State<AudioMemoBlockWidget> {
         if (!started) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('دسترسی به میکروفون داده نشده است'),
+              content: Text('Microphone permission not granted'),
               duration: Duration(seconds: 2),
             ),
           );
@@ -147,7 +147,7 @@ class _AudioMemoBlockWidgetState extends State<AudioMemoBlockWidget> {
       setState(() => _isRecording = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('خطا در ضبط صدا: $e'),
+          content: Text('Error recording audio: $e'),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -168,7 +168,7 @@ class _AudioMemoBlockWidgetState extends State<AudioMemoBlockWidget> {
       setState(() => _isPlaying = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('خطا در پخش صدا: $e'),
+          content: Text('Error playing audio: $e'),
           duration: const Duration(seconds: 2),
         ),
       );

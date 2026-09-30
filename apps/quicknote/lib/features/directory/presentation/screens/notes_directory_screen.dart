@@ -265,6 +265,7 @@ class NotesDirectoryScreen extends StatelessWidget {
               onDuplicate: () => context.read<NotesDirectoryCubit>().duplicateNote(note.id),
               onToggleLock: () => context.read<NotesDirectoryCubit>().toggleLock(note.id),
               onSetReminder: (dt) => context.read<NotesDirectoryCubit>().setNoteReminder(note.id, dt),
+              onTagTap: (tag) => context.read<NotesDirectoryCubit>().selectTag(tag),
             );
           },
           childCount: list.length,

@@ -18,7 +18,6 @@ import '../widgets/blocks/title_block_widget.dart';
 import '../widgets/block_item_builder.dart';
 import '../widgets/export_note_modal.dart';
 import '../widgets/animated_block_entry.dart';
-import '../widgets/keyboard_accessory_toolbar.dart';
 
 class NoteEditorScreen extends StatelessWidget {
   final VoidCallback onBack;
@@ -219,15 +218,9 @@ class NoteEditorScreen extends StatelessWidget {
                 ],
               ),
               Positioned(
-                bottom: 85,
+                bottom: 72,
                 right: 20,
                 child: EditorStatsHud(note: state.note),
-              ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: MediaQuery.paddingOf(context).bottom + 65,
-                child: KeyboardAccessoryToolbar(cubit: cubit),
               ),
               Positioned(
                 left: 0,
@@ -235,20 +228,44 @@ class NoteEditorScreen extends StatelessWidget {
                 bottom: 0,
                 child: DockedBottomBar(
                   onAddBlock: () => SlashCommandSheet.show(context, cubit),
-                  onRecordVoice: () => cubit.addBlock(
+                  onVoiceRecorded: (sec) => cubit.addBlock(
                     BlockType.audioMemo,
-                    content: 'Voice Note',
-                    metadata: {'durationSeconds': 0},
+                    content: 'Voice Memo',
+                    metadata: {'durationSeconds': sec},
+                  ),
+                  onAddChecklist: () => cubit.addBlock(
+                    BlockType.checklist,
+                    content: '',
+                    metadata: {'isChecked': false},
+                  ),
+                  onInsertDate: () {
+                    final n = DateTime.now();
+                    final m = n.month.toString().padLeft(2, '0');
+                    final d = n.day.toString().padLeft(2, '0');
+                    cubit.addBlock(BlockType.paragraph, content: '📅 ${n.year}/$m/$d');
+                  },
+                  onAddImage: (path) => cubit.addBlock(
+                    BlockType.image,
+                    content: path,
+                    metadata: {'caption': ''},
+                  ),
+                  onAddDoodle: (json) => cubit.addBlock(
+                    BlockType.doodle,
+                    content: json,
+                  ),
+                  onAddCallout: () => cubit.addBlock(
+                    BlockType.callout,
+                    content: '',
+                    metadata: {'icon': '💡'},
                   ),
                   onInsertCode: () => cubit.addBlock(
                     BlockType.codeBlock,
                     content: '// Write code here\n',
                     metadata: {'language': 'DART'},
                   ),
-                  onAddChecklist: () => cubit.addBlock(
-                    BlockType.checklist,
+                  onAddQuote: () => cubit.addBlock(
+                    BlockType.quote,
                     content: '',
-                    metadata: {'isChecked': false},
                   ),
                   onFormatText: () => BlockFormatSheet.show(context, cubit),
                 ),

@@ -9,6 +9,8 @@ import 'blocks/checklist_block_widget.dart';
 import 'blocks/callout_block_widget.dart';
 import 'blocks/quote_block_widget.dart';
 import 'blocks/divider_block_widget.dart';
+import 'blocks/image_block_widget.dart';
+import 'blocks/doodle_block_widget.dart';
 
 class BlockItemBuilder {
   static Widget build({
@@ -104,6 +106,18 @@ class BlockItemBuilder {
       case BlockType.divider:
         return DividerBlockWidget(
           block: block,
+          onDelete: () => cubit.removeBlock(block.id),
+        );
+      case BlockType.image:
+        return ImageBlockWidget(
+          block: block,
+          onCaptionChanged: (val) => cubit.updateBlockMetadata(block.id, {'caption': val}),
+          onDelete: () => cubit.removeBlock(block.id),
+        );
+      case BlockType.doodle:
+        return DoodleBlockWidget(
+          block: block,
+          onContentChanged: (val) => cubit.updateBlockContent(block.id, val),
           onDelete: () => cubit.removeBlock(block.id),
         );
     }

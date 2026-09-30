@@ -19,6 +19,7 @@ class NoteCardWidget extends StatelessWidget {
   final ValueChanged<String?>? onColorSelected;
   final VoidCallback? onToggleLock;
   final ValueChanged<DateTime?>? onSetReminder;
+  final ValueChanged<String>? onTagTap;
 
   const NoteCardWidget({
     super.key,
@@ -31,6 +32,7 @@ class NoteCardWidget extends StatelessWidget {
     this.onColorSelected,
     this.onToggleLock,
     this.onSetReminder,
+    this.onTagTap,
   });
 
   Color _colorForCategory(String cat, bool isDark) {
@@ -175,19 +177,26 @@ class NoteCardWidget extends StatelessWidget {
           if (note.tags.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 4),
-              child: Row(
-                children: [
-                  Icon(Icons.tag, size: 11, color: primary),
-                  const SizedBox(width: 2),
-                  Expanded(
-                    child: Text(
-                      note.tags.map((t) => '#$t').join(' '),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppTypography.caption(primary, size: 10, weight: FontWeight.w500),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: note.tags.map((t) => GestureDetector(
+                    onTap: () {
+                      TactileFeedback.selection();
+                      onTagTap?.call(t);
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: primary.withValues(alpha: isDark ? 0.16 : 0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text('#$t', style: AppTypography.caption(primary, size: 9.5, weight: FontWeight.w600)),
                     ),
-                  ),
-                ],
+                  )).toList(),
+                ),
               ),
             ),
           Padding(

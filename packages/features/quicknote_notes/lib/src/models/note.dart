@@ -79,6 +79,14 @@ class Note extends Equatable {
         case BlockType.diagram:
           buffer.writeln('```\n[SQLite WAL] -> [CRDT Core] -> [Cloud]\n```\n*${block.content}*\n');
           break;
+        case BlockType.image:
+          final caption = block.metadata['caption'] as String? ?? '';
+          buffer.writeln('![${caption.isNotEmpty ? caption : 'Image'}](${block.content})\n');
+          if (caption.isNotEmpty) buffer.writeln('*$caption*\n');
+          break;
+        case BlockType.doodle:
+          buffer.writeln('![Sketch](${block.content})\n');
+          break;
       }
     }
     return buffer.toString().trim();

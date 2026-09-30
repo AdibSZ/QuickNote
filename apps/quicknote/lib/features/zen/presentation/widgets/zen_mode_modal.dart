@@ -124,7 +124,7 @@ class _ZenModeModalState extends State<ZenModeModal> {
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(
-                'حالت ذن • $words کلمه • حدود $readingMin دقیقه مطالعه',
+                'Zen Mode • $words words • ~$readingMin min read',
                 style: TextStyle(color: fg.withValues(alpha: 0.4), fontSize: 11),
               ),
             ),

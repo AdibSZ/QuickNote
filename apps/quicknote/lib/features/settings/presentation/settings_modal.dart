@@ -83,6 +83,29 @@ class SettingsModal extends StatelessWidget {
                   );
                 },
               ),
+              const SizedBox(height: 16),
+              Text('LANGUAGE', style: AppTypography.caption(onSurfaceVar, size: 10, weight: FontWeight.w700)),
+              const SizedBox(height: 8),
+              SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment(value: 'en', label: Text('English (Default)'), icon: Icon(Icons.language, size: 14)),
+                  ButtonSegment(value: 'fa', label: Text('Persian (فارسی)'), icon: Icon(Icons.translate, size: 14)),
+                ],
+                selected: const {'en'},
+                onSelectionChanged: (set) {
+                  TactileFeedback.selection();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        set.first == 'en'
+                            ? 'QuickNote is set to 100% English.'
+                            : 'App is 100% English. RTL text typing is supported in notes.',
+                      ),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
               const SizedBox(height: 20),
               // Stats
               Text('STORAGE & STATS', style: AppTypography.caption(onSurfaceVar, size: 10, weight: FontWeight.w700)),
@@ -109,9 +132,9 @@ class SettingsModal extends StatelessWidget {
               ListTile(
                 dense: true,
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.cloud_sync_outlined, color: Color(0xFF0A84FF), size: 20),
-                title: const Text('پشتیبان‌گیری و بازیابی محلی'),
-                subtitle: const Text('تهیه خروجی کامل یا بازیابی یادداشت‌ها از فایل پشتیبان'),
+                leading: const Icon(Icons.archive_outlined, color: Color(0xFF0A84FF), size: 20),
+                title: const Text('Local Backup & Restore (.zip)'),
+                subtitle: const Text('Export complete notes archive or restore from .zip'),
                 onTap: () {
                   Navigator.pop(context);
                   BackupRestoreModal.show(context);

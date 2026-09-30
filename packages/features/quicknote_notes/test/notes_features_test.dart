@@ -54,6 +54,8 @@ void main() {
           NoteBlock(id: 'b2', type: BlockType.quote, content: 'Wise words'),
           NoteBlock(id: 'b3', type: BlockType.divider, content: ''),
           NoteBlock(id: 'b4', type: BlockType.checklist, content: 'Ship update', metadata: {'isChecked': true}),
+          NoteBlock(id: 'b5', type: BlockType.image, content: 'https://example.com/pic.png', metadata: {'caption': 'Sunset'}),
+          NoteBlock(id: 'b6', type: BlockType.doodle, content: '{"points":[]}'),
         ],
       );
 
@@ -62,6 +64,8 @@ void main() {
       expect(md, contains('> *Wise words*'));
       expect(md, contains('---'));
       expect(md, contains('- [x] Ship update'));
+      expect(md, contains('![Sunset](https://example.com/pic.png)'));
+      expect(md, contains('![Sketch]({"points":[]})'));
     });
   });
 

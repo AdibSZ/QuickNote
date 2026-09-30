@@ -5,6 +5,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../../../../core/theme/text_direction_helper.dart';
 import '../../../../../core/ui_kit/tactile_feedback.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 typedef BlockTransformCallback = void Function(
   BlockType newType,
@@ -155,37 +156,98 @@ class _ParagraphBlockWidgetState extends State<ParagraphBlockWidget> {
               : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              child: TextField(
-                controller: _controller,
-                focusNode: _focusNode,
-                onChanged: _handleChanged,
-                maxLines: null,
-                textDirection: _isRtl ? TextDirection.rtl : TextDirection.ltr,
-                textAlign: _isRtl ? TextAlign.right : TextAlign.left,
-                style: AppTypography.body(onSurface, size: fontSize),
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  isDense: true,
-                  contentPadding: EdgeInsets.zero,
-                  hintText: 'Type text here...',
-                  hintStyle: AppTypography.body(onSurfaceVar.withValues(alpha: 0.4), size: fontSize),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    focusNode: _focusNode,
+                    onChanged: _handleChanged,
+                    maxLines: null,
+                    textDirection: _isRtl ? TextDirection.rtl : TextDirection.ltr,
+                    textAlign: _isRtl ? TextAlign.right : TextAlign.left,
+                    style: AppTypography.body(onSurface, size: fontSize),
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                      hintText: 'Type text here...',
+                      hintStyle: AppTypography.body(onSurfaceVar.withValues(alpha: 0.4), size: fontSize),
+                    ),
+                  ),
                 ),
-              ),
+                if (widget.onDelete != null)
+                  IconButton(
+                    icon: Icon(Icons.close, size: 14, color: onSurfaceVar.withValues(alpha: 0.4)),
+                    onPressed: widget.onDelete,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+                    tooltip: 'Delete block',
+                  ),
+              ],
             ),
-            if (widget.onDelete != null)
-              IconButton(
-                icon: Icon(Icons.close, size: 14, color: onSurfaceVar.withValues(alpha: 0.4)),
-                onPressed: widget.onDelete,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
-                tooltip: 'Delete block',
-              ),
+            _buildActionChips(isDark ? AppColors.darkPrimary : AppColors.lightPrimary, isDark),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildActionChips(Color primary, bool isDark) {
+    final text = _controller.text;
+    final urlReg = RegExp(r'https?://[^\s]+|www\.[^\s]+', caseSensitive: false);
+    final phoneReg = RegExp(r'(?:\+?[0-9]{1,3}[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}');
+    final urls = urlReg.allMatches(text).map((m) => m.group(0)!).toSet().toList();
+    final phones = phoneReg.allMatches(text).map((m) => m.group(0)!).toSet().toList();
+
+    if (urls.isEmpty && phones.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 4,
+        children: [
+          ...urls.map((url) {
+            final target = url.startsWith('http') ? url : 'https://$url';
+            return ActionChip(
+              avatar: Icon(Icons.open_in_new, size: 12, color: primary),
+              label: Text(url, style: TextStyle(fontSize: 10.5, color: primary, fontWeight: FontWeight.w600)),
+              backgroundColor: primary.withValues(alpha: isDark ? 0.15 : 0.08),
+              side: BorderSide(color: primary.withValues(alpha: 0.25), width: 0.5),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              visualDensity: VisualDensity.compact,
+              onPressed: () async {
+                TactileFeedback.selection();
+                final uri = Uri.tryParse(target);
+                if (uri != null) await launchUrl(uri, mode: LaunchMode.externalApplication);
+              },
+            );
+          }),
+          ...phones.map((phone) {
+            final clean = phone.replaceAll(RegExp(r'[\s\-\(\)]'), '');
+            return ActionChip(
+              avatar: const Icon(Icons.phone_outlined, size: 12, color: Color(0xFF10B981)),
+              label: Text(phone, style: const TextStyle(fontSize: 10.5, color: Color(0xFF10B981), fontWeight: FontWeight.w600)),
+              backgroundColor: const Color(0xFF10B981).withValues(alpha: isDark ? 0.15 : 0.08),
+              side: BorderSide(color: const Color(0xFF10B981).withValues(alpha: 0.25), width: 0.5),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              visualDensity: VisualDensity.compact,
+              onPressed: () async {
+                TactileFeedback.selection();
+                final uri = Uri.tryParse('tel:$clean');
+                if (uri != null) await launchUrl(uri);
+              },
+            );
+          }),
+        ],
       ),
     );
   }

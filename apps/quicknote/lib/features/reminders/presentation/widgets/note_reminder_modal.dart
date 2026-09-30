@@ -49,7 +49,7 @@ class _NoteReminderModalState extends State<NoteReminderModal> {
     final d = dt.day.toString().padLeft(2, '0');
     final hh = dt.hour.toString().padLeft(2, '0');
     final mm = dt.minute.toString().padLeft(2, '0');
-    return '$y/$m/$d ساعت $hh:$mm';
+    return '$y/$m/$d at $hh:$mm';
   }
 
   void _setPreset(Duration offset, {int? exactHour}) {
@@ -113,7 +113,7 @@ class _NoteReminderModalState extends State<NoteReminderModal> {
                 children: [
                   Icon(Icons.alarm_on_rounded, color: primary, size: 22),
                   const SizedBox(width: 8),
-                  Text('تنظیم یادآور و هشدار', style: AppTypography.title(onSurface, size: 16)),
+                  Text('Set Note Reminder', style: AppTypography.title(onSurface, size: 16)),
                 ],
               ),
               IconButton(
@@ -145,7 +145,7 @@ class _NoteReminderModalState extends State<NoteReminderModal> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    _selectedTime != null ? _formatDateTime(_selectedTime!) : 'یادآوری تنظیم نشده است',
+                    _selectedTime != null ? _formatDateTime(_selectedTime!) : 'No reminder scheduled',
                     style: TextStyle(
                       color: _selectedTime != null ? onSurface : onSurfaceVar,
                       fontWeight: _selectedTime != null ? FontWeight.bold : FontWeight.normal,
@@ -165,26 +165,26 @@ class _NoteReminderModalState extends State<NoteReminderModal> {
             ),
           ),
           const SizedBox(height: 16),
-          Text('زمان‌های پیشنهادی سریع:', style: AppTypography.caption(onSurfaceVar, size: 11)),
+          Text('Suggested times:', style: AppTypography.caption(onSurfaceVar, size: 11)),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
               ActionChip(
-                label: const Text('۱ ساعت دیگر'),
+                label: const Text('In 1 Hour'),
                 onPressed: () => _setPreset(const Duration(hours: 1)),
               ),
               ActionChip(
-                label: const Text('امروز ۱۸:۰۰'),
+                label: const Text('Today 18:00'),
                 onPressed: () => _setPreset(Duration.zero, exactHour: 18),
               ),
               ActionChip(
-                label: const Text('فردا ۰۹:۰۰'),
+                label: const Text('Tomorrow 09:00'),
                 onPressed: () => _setPreset(const Duration(days: 1), exactHour: 9),
               ),
               ActionChip(
-                label: const Text('انتخاب دستی تاریخ و ساعت 📅'),
+                label: const Text('Custom Date & Time 📅'),
                 onPressed: _pickCustomDateTime,
               ),
             ],
@@ -205,7 +205,7 @@ class _NoteReminderModalState extends State<NoteReminderModal> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text('حذف یادآور'),
+                    child: const Text('Remove'),
                   ),
                 ),
               if (widget.currentReminder != null) const SizedBox(width: 10),
@@ -223,7 +223,7 @@ class _NoteReminderModalState extends State<NoteReminderModal> {
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('ذخیره یادآور'),
+                  child: const Text('Save Reminder'),
                 ),
               ),
             ],

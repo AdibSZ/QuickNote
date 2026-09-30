@@ -195,7 +195,7 @@ class EditorHeader extends StatelessWidget {
                 GlassIconButton(
                   size: 34,
                   icon: Icon(Icons.self_improvement, size: 18, color: onSurfaceVar),
-                  tooltip: 'Zen Mode (حالت تمرکز)',
+                  tooltip: 'Zen Mode',
                   onPressed: onZenMode,
                 ),
                 const SizedBox(width: 4),
@@ -204,7 +204,7 @@ class EditorHeader extends StatelessWidget {
                 GlassIconButton(
                   size: 34,
                   icon: const Icon(Icons.auto_awesome_outlined, size: 17, color: Color(0xFFA855F7)),
-                  tooltip: 'Share Card (کارت شیک)',
+                  tooltip: 'Share Card',
                   onPressed: onShareAesthetic,
                 ),
                 const SizedBox(width: 4),
@@ -217,7 +217,7 @@ class EditorHeader extends StatelessWidget {
                     size: 17,
                     color: hasReminder ? const Color(0xFF34C759) : onSurfaceVar,
                   ),
-                  tooltip: 'Reminder (یادآور)',
+                  tooltip: 'Reminder',
                   onPressed: onReminder,
                 ),
                 const SizedBox(width: 4),

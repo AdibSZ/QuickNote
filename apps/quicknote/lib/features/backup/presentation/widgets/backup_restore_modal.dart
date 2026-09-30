@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:archive/archive.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quicknote_notes/quicknote_notes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -29,7 +31,7 @@ class BackupRestoreModal extends StatefulWidget {
 
 class _BackupRestoreModalState extends State<BackupRestoreModal> with SingleTickerProviderStateMixin {
   late TabController _tabCtrl;
-  final TextEditingController _restoreCtrl = TextEditingController();
+  bool _isExporting = false;
   bool _isRestoring = false;
 
   @override
@@ -41,76 +43,110 @@ class _BackupRestoreModalState extends State<BackupRestoreModal> with SingleTick
   @override
   void dispose() {
     _tabCtrl.dispose();
-    _restoreCtrl.dispose();
     super.dispose();
   }
 
-  void _exportJson(List<Note> notes) {
-    TactileFeedback.selection();
-    final backupData = {
-      'app': 'QuickNote',
-      'version': 1,
-      'exportedAt': DateTime.now().toIso8601String(),
-      'notesCount': notes.length,
-      'notes': notes.map((n) => n.toJson()).toList(),
-    };
-    final jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
-    Clipboard.setData(ClipboardData(text: jsonString));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('فایل پشتیبان JSON با موفقیت در کلیپ‌بورد کپی شد ✔️'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+  Future<void> _exportZip(List<Note> notes) async {
+    TactileFeedback.medium();
+    setState(() => _isExporting = true);
+    try {
+      final archive = Archive();
+      final notesBytes = utf8.encode(jsonEncode(notes.map((n) => n.toJson()).toList()));
+      archive.addFile(ArchiveFile('notes.json', notesBytes.length, notesBytes));
+
+      final manifestBytes = utf8.encode(jsonEncode({
+        'app': 'QuickNote',
+        'version': 1,
+        'exportedAt': DateTime.now().toIso8601String(),
+        'notesCount': notes.length,
+      }));
+      archive.addFile(ArchiveFile('manifest.json', manifestBytes.length, manifestBytes));
+
+      final zipData = ZipEncoder().encode(archive);
+      final fileName = 'quicknote_backup_${DateTime.now().millisecondsSinceEpoch}.zip';
+
+      final output = await FilePicker.saveFile(
+        dialogTitle: 'Save QuickNote Backup ZIP',
+        fileName: fileName,
+        type: FileType.custom,
+        allowedExtensions: ['zip'],
+        bytes: Uint8List.fromList(zipData),
+      );
+
+      if (!mounted) return;
+      setState(() => _isExporting = false);
+      TactileFeedback.success();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(output != null ? 'Backup saved to $output! 📦' : 'Backup ZIP generated!')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isExporting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Export error: $e'), backgroundColor: Colors.redAccent),
+      );
+    }
   }
 
-  Future<void> _restoreJson(NotesDirectoryCubit cubit) async {
-    final text = _restoreCtrl.text.trim();
-    if (text.isEmpty) return;
-
+  Future<void> _pickAndRestoreZip(NotesDirectoryCubit cubit) async {
     TactileFeedback.medium();
-    setState(() => _isRestoring = true);
-
     try {
-      final dynamic decoded = jsonDecode(text);
-      List<dynamic> notesRaw = [];
-      if (decoded is Map && decoded.containsKey('notes')) {
-        notesRaw = decoded['notes'] as List;
-      } else if (decoded is List) {
-        notesRaw = decoded;
-      } else {
-        throw const FormatException('ساختار فایل پشتیبان معتبر نیست.');
+      final res = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['zip'],
+      );
+      if (res.isEmpty) return;
+
+      final file = res.first;
+      final bytes = await file.readAsBytes();
+      if (bytes.isEmpty) return;
+
+      setState(() => _isRestoring = true);
+      final archive = ZipDecoder().decodeBytes(bytes);
+      ArchiveFile? notesFile;
+      for (final f in archive.files) {
+        if (f.name == 'notes.json' || f.name.endsWith('/notes.json')) {
+          notesFile = f;
+          break;
+        }
       }
 
-      int restoredCount = 0;
+      if (notesFile == null) {
+        throw Exception('Invalid QuickNote ZIP: missing notes.json file.');
+      }
+
+      final jsonStr = utf8.decode(notesFile.content as List<int>);
+      final dynamic decoded = jsonDecode(jsonStr);
+
+      List<dynamic> notesRaw = [];
+      if (decoded is List) {
+        notesRaw = decoded;
+      } else if (decoded is Map && decoded.containsKey('notes')) {
+        notesRaw = decoded['notes'] as List;
+      }
+
+      int count = 0;
       for (final item in notesRaw) {
         if (item is Map) {
           final note = Note.fromJson(Map<String, dynamic>.from(item));
           await cubit.createNewNote(title: note.title, category: note.category);
-          restoredCount++;
+          count++;
         }
       }
 
       cubit.loadNotes();
       if (!mounted) return;
       setState(() => _isRestoring = false);
-      _restoreCtrl.clear();
       Navigator.pop(context);
+      TactileFeedback.success();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$restoredCount یادداشت با موفقیت بازیابی شد! 🎉'),
-          duration: const Duration(seconds: 2),
-        ),
+        SnackBar(content: Text('$count notes restored successfully from ZIP! 🎉')),
       );
     } catch (e) {
       if (!mounted) return;
       setState(() => _isRestoring = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('خطا در بازیابی پشتیبان: $e'),
-          backgroundColor: Colors.redAccent,
-          duration: const Duration(seconds: 3),
-        ),
+        SnackBar(content: Text('Restore error: $e'), backgroundColor: Colors.redAccent),
       );
     }
   }
@@ -121,27 +157,19 @@ class _BackupRestoreModalState extends State<BackupRestoreModal> with SingleTick
     final onSurface = isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface;
     final onSurfaceVar = isDark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant;
     final primary = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
-    final bg = isDark ? AppColors.darkSurfaceContainerHighest : AppColors.lightSurfaceContainerHighest;
 
     return Container(
-      margin: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-      ),
+      margin: EdgeInsets.only(left: 16, right: 16, bottom: MediaQuery.of(context).viewInsets.bottom + 16),
       decoration: BoxDecoration(
-        color: bg,
+        color: isDark ? AppColors.darkSurfaceContainerHighest : AppColors.lightSurfaceContainerHighest,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isDark ? AppColors.darkHairlineBorder : AppColors.lightHairlineBorder,
-          width: 0.5,
-        ),
+        border: Border.all(color: isDark ? AppColors.darkHairlineBorder : AppColors.lightHairlineBorder, width: 0.5),
       ),
       padding: const EdgeInsets.all(20),
       child: BlocBuilder<NotesDirectoryCubit, NotesDirectoryState>(
         builder: (context, state) {
-          final cubit = context.read<NotesDirectoryCubit>();
           final notes = state.allNotes;
+          final cubit = context.read<NotesDirectoryCubit>();
 
           return Column(
             mainAxisSize: MainAxisSize.min,
@@ -151,15 +179,12 @@ class _BackupRestoreModalState extends State<BackupRestoreModal> with SingleTick
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.cloud_sync_outlined, color: primary, size: 22),
+                      Icon(Icons.folder_zip_outlined, color: primary, size: 24),
                       const SizedBox(width: 8),
-                      Text('پشتیبان‌گیری و بازیابی محلی', style: AppTypography.title(onSurface, size: 16)),
+                      Text('ZIP Backup & Restore', style: AppTypography.title(onSurface, size: 16)),
                     ],
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close, size: 20),
-                    onPressed: () => Navigator.pop(context),
-                  ),
+                  IconButton(icon: const Icon(Icons.close, size: 20), onPressed: () => Navigator.pop(context)),
                 ],
               ),
               const SizedBox(height: 12),
@@ -168,88 +193,31 @@ class _BackupRestoreModalState extends State<BackupRestoreModal> with SingleTick
                 indicatorColor: primary,
                 labelColor: primary,
                 unselectedLabelColor: onSurfaceVar,
-                tabs: const [
-                  Tab(text: 'پشتیبان‌گیری (Export)'),
-                  Tab(text: 'بازیابی (Restore)'),
-                ],
+                tabs: const [Tab(text: 'Export (.ZIP)'), Tab(text: 'Restore (.ZIP)')],
               ),
               const SizedBox(height: 16),
               SizedBox(
-                height: 210,
+                height: 190,
                 child: TabBarView(
                   controller: _tabCtrl,
                   children: [
-                    // Export Tab
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.inventory_2_outlined, size: 44, color: primary.withValues(alpha: 0.8)),
-                        const SizedBox(height: 10),
-                        Text(
-                          'تعداد کل یادداشت‌های آماده نسخه پشتیبان: ${notes.length}',
-                          style: AppTypography.body(onSurface, size: 13, weight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'نسخه پشتیبان شامل متن، چک‌لیست‌ها، صداها و دسته‌بندی‌هاست.',
-                          textAlign: TextAlign.center,
-                          style: AppTypography.caption(onSurfaceVar, size: 11),
-                        ),
-                        const SizedBox(height: 20),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () => _exportJson(notes),
-                            icon: const Icon(Icons.copy, size: 18),
-                            label: const Text('کپی فایل پشتیبان JSON در کلیپ‌بورد'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primary,
-                              foregroundColor: isDark ? AppColors.darkOnPrimary : AppColors.lightOnPrimary,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          ),
-                        ),
-                      ],
+                    _tabView(
+                      icon: Icons.archive_outlined,
+                      color: primary,
+                      title: '${notes.length} notes ready for ZIP packaging',
+                      subtitle: 'Packages all blocks and metadata into a standalone .ZIP file.',
+                      btnText: _isExporting ? 'Packaging ZIP...' : 'Download quicknote_backup.zip',
+                      isLoading: _isExporting,
+                      onPressed: () => _exportZip(notes),
                     ),
-                    // Restore Tab
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'کد یا متن فایل پشتیبان (JSON) را در کادر زیر وارد کنید:',
-                          style: AppTypography.caption(onSurfaceVar, size: 11),
-                        ),
-                        const SizedBox(height: 8),
-                        Expanded(
-                          child: TextField(
-                            controller: _restoreCtrl,
-                            maxLines: 5,
-                            style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
-                            decoration: InputDecoration(
-                              hintText: '{\n  "notes": [...]\n}',
-                              filled: true,
-                              fillColor: isDark ? Colors.black26 : Colors.white70,
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: _isRestoring ? null : () => _restoreJson(cubit),
-                            icon: const Icon(Icons.file_upload_outlined, size: 18),
-                            label: Text(_isRestoring ? 'در حال بازیابی...' : 'بازیابی یادداشت‌ها'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF34C759),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          ),
-                        ),
-                      ],
+                    _tabView(
+                      icon: Icons.unarchive_outlined,
+                      color: const Color(0xFF34C759),
+                      title: 'Upload .ZIP Backup Archive',
+                      subtitle: 'Select quicknote_backup.zip from your device to restore notes.',
+                      btnText: _isRestoring ? 'Restoring Archive...' : 'Select & Restore .ZIP',
+                      isLoading: _isRestoring,
+                      onPressed: () => _pickAndRestoreZip(cubit),
                     ),
                   ],
                 ),
@@ -258,6 +226,42 @@ class _BackupRestoreModalState extends State<BackupRestoreModal> with SingleTick
           );
         },
       ),
+    );
+  }
+
+  Widget _tabView({
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String subtitle,
+    required String btnText,
+    required bool isLoading,
+    required VoidCallback onPressed,
+  }) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, size: 40, color: color.withValues(alpha: 0.85)),
+        const SizedBox(height: 8),
+        Text(title, style: AppTypography.body(Theme.of(context).brightness == Brightness.dark ? AppColors.darkOnSurface : AppColors.lightOnSurface, size: 13, weight: FontWeight.w600)),
+        const SizedBox(height: 4),
+        Text(subtitle, textAlign: TextAlign.center, style: AppTypography.caption(Theme.of(context).brightness == Brightness.dark ? AppColors.darkOnSurfaceVariant : AppColors.lightOnSurfaceVariant, size: 11)),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: isLoading ? null : onPressed,
+            icon: const Icon(Icons.touch_app_outlined, size: 18),
+            label: Text(btnText),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: color,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
