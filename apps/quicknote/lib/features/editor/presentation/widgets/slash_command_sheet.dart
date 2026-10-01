@@ -67,13 +67,6 @@ class SlashCommandSheet {
         subtitle: 'Subtle hairline separator',
         type: BlockType.divider,
       ),
-      _SlashItem(
-        icon: Icons.schema_outlined,
-        title: 'Visual Flow',
-        subtitle: 'Architecture diagram block',
-        type: BlockType.diagram,
-        content: 'Flow Diagram',
-      ),
     ];
 
     showModalBottomSheet(

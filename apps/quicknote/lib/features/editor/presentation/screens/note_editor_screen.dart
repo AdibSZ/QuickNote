@@ -229,11 +229,13 @@ class NoteEditorScreen extends StatelessWidget {
                   onAddBlock: () => cubit.addBlock(BlockType.paragraph, content: ''),
                   onAddHeading: () => cubit.addBlock(BlockType.heading2, content: '', metadata: {'fontSize': 20.0}),
                   onAddDivider: () => cubit.addBlock(BlockType.divider, content: ''),
-                  onAddDiagram: () => cubit.addBlock(BlockType.diagram, content: 'Flow Diagram'),
-                  onVoiceRecorded: (sec) => cubit.addBlock(
+                  onVoiceRecorded: (sec, path) => cubit.addBlock(
                     BlockType.audioMemo,
                     content: 'Voice Memo',
-                    metadata: {'durationSeconds': sec},
+                    metadata: {
+                      'durationSeconds': sec,
+                      if (path != null) 'audioPath': path,
+                    },
                   ),
                   onAddChecklist: () => cubit.addBlock(
                     BlockType.checklist,

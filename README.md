@@ -51,8 +51,8 @@ Most note-taking apps are bloated, sluggish, or lock your thoughts behind mandat
 ### 🎨 2. Creative Media & Interactive Tools
 - 🎙️ **Apple Voice Memos Recording:** Direct microphone recording with live animated frequency waveforms, pause/stop/delete controls, and automatic time tracking.
 - 🎨 **Doodle & Handwriting Canvas:** Built-in vector drawing canvas with customizable stroke widths, palettes, undo/clear actions, and inline card rendering.
-- 🖼️ **Media Attachments:** Insert high-res photos and diagrams seamlessly inside notes.
-- 📊 **Visual Architecture Diagrams:** Render flowchart diagrams directly inside note blocks.
+- 🖼️ **Media Attachments:** Insert high-res photos seamlessly inside notes with custom captions and lightbox zoom.
+- ⚡ **Docked Quick Actions:** 1-tap addition of headers, checklists, voice notes, doodles, and date stamps.
 
 ### 🔒 3. Security, Zen & Productivity
 - 🔐 **Note Security Lock:** Lock sensitive or private notes with a secure PIN passcode and discreet privacy cards.

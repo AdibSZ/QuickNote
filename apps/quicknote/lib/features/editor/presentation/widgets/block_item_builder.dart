@@ -4,7 +4,6 @@ import 'blocks/heading_block_widget.dart';
 import 'blocks/paragraph_block_widget.dart';
 import 'blocks/audio_memo_block_widget.dart';
 import 'blocks/code_block_widget.dart';
-import 'blocks/diagram_block_widget.dart';
 import 'blocks/checklist_block_widget.dart';
 import 'blocks/callout_block_widget.dart';
 import 'blocks/quote_block_widget.dart';
@@ -58,19 +57,7 @@ class BlockItemBuilder {
           onDelete: () => cubit.removeBlock(block.id),
         );
       case BlockType.diagram:
-        return Stack(
-          children: [
-            DiagramBlockWidget(block: block),
-            Positioned(
-              top: 6,
-              right: 6,
-              child: IconButton(
-                icon: const Icon(Icons.close, size: 14),
-                onPressed: () => cubit.removeBlock(block.id),
-              ),
-            ),
-          ],
-        );
+        return const SizedBox.shrink();
       case BlockType.checklist:
         return ChecklistBlockWidget(
           block: block,

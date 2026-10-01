@@ -6,29 +6,19 @@ import 'package:image_picker/image_picker.dart';
 import 'package:quicknote_core/quicknote_core.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/ui_kit/tactile_feedback.dart';
+import 'blocks/audio_service.dart';
 import 'blocks/doodle_canvas_modal.dart';
 
 class DockedBottomBar extends StatefulWidget {
-  final VoidCallback onAddBlock;
-  final VoidCallback onAddHeading;
-  final VoidCallback onAddDivider;
-  final VoidCallback onAddDiagram;
-  final ValueChanged<int> onVoiceRecorded;
-  final VoidCallback onAddChecklist;
-  final VoidCallback onInsertDate;
-  final ValueChanged<String> onAddImage;
-  final ValueChanged<String> onAddDoodle;
-  final VoidCallback onAddCallout;
-  final VoidCallback onInsertCode;
-  final VoidCallback onAddQuote;
-  final VoidCallback onFormatText;
+  final VoidCallback onAddBlock, onAddHeading, onAddDivider, onAddChecklist, onInsertDate, onAddCallout, onInsertCode, onAddQuote, onFormatText;
+  final void Function(int durationSeconds, String? audioPath) onVoiceRecorded;
+  final ValueChanged<String> onAddImage, onAddDoodle;
 
   const DockedBottomBar({
     super.key,
     required this.onAddBlock,
     required this.onAddHeading,
     required this.onAddDivider,
-    required this.onAddDiagram,
     required this.onVoiceRecorded,
     required this.onAddChecklist,
     required this.onInsertDate,
@@ -48,17 +38,37 @@ class _DockedBottomBarState extends State<DockedBottomBar> with SingleTickerProv
   bool _isRecording = false;
   int _recordSeconds = 0;
   Timer? _recordTimer;
+  final AudioService _audioService = AudioService();
+  double _lastAmp = 0.4;
   late final AnimationController _anim = AnimationController(vsync: this, duration: const Duration(milliseconds: 900));
+
+  @override
+  void initState() {
+    super.initState();
+    _audioService.init();
+    _audioService.onAmplitude = (amp) {
+      if (mounted && _isRecording) setState(() => _lastAmp = amp);
+    };
+  }
 
   @override
   void dispose() {
     _recordTimer?.cancel();
     _anim.dispose();
+    _audioService.dispose();
     super.dispose();
   }
 
-  void _startRecording() {
+  Future<void> _startRecording() async {
     TactileFeedback.heavy();
+    final started = await _audioService.startRecording();
+    if (!started) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Microphone permission not granted')));
+      }
+      return;
+    }
+    if (!mounted) return;
     setState(() {
       _isRecording = true;
       _recordSeconds = 0;
@@ -69,19 +79,22 @@ class _DockedBottomBarState extends State<DockedBottomBar> with SingleTickerProv
     });
   }
 
-  void _stopRecording() {
+  Future<void> _stopRecording() async {
     TactileFeedback.success();
     final d = _recordSeconds;
+    final path = await _audioService.stopRecording();
     _resetRecording();
-    widget.onVoiceRecorded(d > 0 ? d : 1);
+    widget.onVoiceRecorded(d > 0 ? d : 1, path);
   }
 
   void _resetRecording() {
     _recordTimer?.cancel();
     _anim.stop();
+    _audioService.stopRecording();
     setState(() {
       _isRecording = false;
       _recordSeconds = 0;
+      _lastAmp = 0.4;
     });
   }
 
@@ -93,15 +106,12 @@ class _DockedBottomBarState extends State<DockedBottomBar> with SingleTickerProv
     } catch (_) {}
   }
 
-  String _formatTime(int sec) {
-    return '${(sec ~/ 60).toString().padLeft(2, '0')}:${(sec % 60).toString().padLeft(2, '0')}';
-  }
+  String _formatTime(int sec) => '${(sec ~/ 60).toString().padLeft(2, '0')}:${(sec % 60).toString().padLeft(2, '0')}';
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bottomPad = MediaQuery.paddingOf(context).bottom;
-
     return Padding(
       padding: EdgeInsets.only(left: 14, right: 14, bottom: bottomPad + 10),
       child: AnimatedSwitcher(
@@ -121,22 +131,9 @@ class _DockedBottomBarState extends State<DockedBottomBar> with SingleTickerProv
           height: 54,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                const Color(0xFFDC2626).withValues(alpha: 0.90),
-                const Color(0xFF991B1B).withValues(alpha: 0.80),
-              ],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
+            gradient: LinearGradient(colors: [const Color(0xFFDC2626).withValues(alpha: 0.90), const Color(0xFF991B1B).withValues(alpha: 0.80)]),
             borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFDC2626).withValues(alpha: 0.45),
-                blurRadius: 22,
-                offset: const Offset(0, 6),
-              ),
-            ],
+            boxShadow: [BoxShadow(color: const Color(0xFFDC2626).withValues(alpha: 0.45), blurRadius: 22, offset: const Offset(0, 6))],
             border: Border.all(color: Colors.white.withValues(alpha: 0.40), width: 1.2),
           ),
           child: Row(
@@ -146,32 +143,23 @@ class _DockedBottomBarState extends State<DockedBottomBar> with SingleTickerProv
                 builder: (context, child) => Container(
                   width: 10,
                   height: 10,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.5 + (_anim.value * 0.5)),
-                    shape: BoxShape.circle,
-                  ),
+                  decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.5 + (_anim.value * 0.5)), shape: BoxShape.circle),
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
-                _formatTime(_recordSeconds),
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14),
-              ),
+              Text(_formatTime(_recordSeconds), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
               const Spacer(),
               AnimatedBuilder(
                 animation: _anim,
                 builder: (context, child) => Row(
                   mainAxisSize: MainAxisSize.min,
                   children: List.generate(7, (i) {
-                    final factor = ((math.sin(_anim.value * 2 * math.pi + (i * 0.9)) + 1) / 2).clamp(0.2, 1.0);
+                    final factor = ((math.sin(_anim.value * 2 * math.pi + (i * 0.9)) + 1) / 2 * (_lastAmp * 0.7 + 0.3)).clamp(0.2, 1.0);
                     return Container(
                       width: 3.5,
-                      height: 8 + (18 * factor),
+                      height: 8 + (20 * factor),
                       margin: const EdgeInsets.symmetric(horizontal: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.85),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
+                      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.85), borderRadius: BorderRadius.circular(2)),
                     );
                   }),
                 ),
@@ -216,35 +204,17 @@ class _DockedBottomBarState extends State<DockedBottomBar> with SingleTickerProv
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: isDark
-                  ? [
-                      const Color(0xFF1C1C24).withValues(alpha: 0.70),
-                      const Color(0xFF121217).withValues(alpha: 0.85),
-                    ]
-                  : [
-                      Colors.white.withValues(alpha: 0.85),
-                      const Color(0xFFF8FAFC).withValues(alpha: 0.75),
-                    ],
+                  ? [const Color(0xFF1C1C24).withValues(alpha: 0.70), const Color(0xFF121217).withValues(alpha: 0.85)]
+                  : [Colors.white.withValues(alpha: 0.85), const Color(0xFFF8FAFC).withValues(alpha: 0.75)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.40 : 0.08),
-                blurRadius: 28,
-                offset: const Offset(0, 10),
-                spreadRadius: -1,
-              ),
-              BoxShadow(
-                color: (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7)).withValues(alpha: 0.06),
-                blurRadius: 18,
-                offset: const Offset(0, -2),
-              ),
+              BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.40 : 0.08), blurRadius: 28, offset: const Offset(0, 10), spreadRadius: -1),
+              BoxShadow(color: (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7)).withValues(alpha: 0.06), blurRadius: 18, offset: const Offset(0, -2)),
             ],
-            border: Border.all(
-              color: isDark ? Colors.white.withValues(alpha: 0.20) : Colors.white.withValues(alpha: 0.95),
-              width: 1.1,
-            ),
+            border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.20) : Colors.white.withValues(alpha: 0.95), width: 1.1),
           ),
           child: ListView(
             scrollDirection: Axis.horizontal,
@@ -264,7 +234,6 @@ class _DockedBottomBarState extends State<DockedBottomBar> with SingleTickerProv
               _btn(Icons.data_object, TextRegistry.get(TextKey.insertCodeBlock), const Color(0xFF818CF8), widget.onInsertCode),
               _btn(Icons.format_quote_rounded, TextRegistry.get(TextKey.addQuote), const Color(0xFFE879F9), widget.onAddQuote),
               _btn(Icons.horizontal_rule, TextRegistry.get(TextKey.addDivider), const Color(0xFF94A3B8), widget.onAddDivider),
-              _btn(Icons.schema_outlined, TextRegistry.get(TextKey.addDiagram), const Color(0xFF2DD4BF), widget.onAddDiagram),
               _btn(Icons.format_size, TextRegistry.get(TextKey.formatText), onSurface, widget.onFormatText),
             ],
           ),

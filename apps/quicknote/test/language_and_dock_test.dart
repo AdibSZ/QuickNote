@@ -100,8 +100,8 @@ void main() {
       cubit.addBlock(BlockType.divider);
       expect(cubit.state.blocks.last.type, BlockType.divider);
 
-      cubit.addBlock(BlockType.diagram, content: 'Architecture Flow');
-      expect(cubit.state.blocks.last.type, BlockType.diagram);
+      cubit.addBlock(BlockType.checklist, content: 'Buy milk');
+      expect(cubit.state.blocks.last.type, BlockType.checklist);
     });
   });
 }

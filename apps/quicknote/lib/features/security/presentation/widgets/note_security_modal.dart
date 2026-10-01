@@ -3,6 +3,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/ui_kit/glass_container.dart';
 import '../../../../core/ui_kit/tactile_feedback.dart';
+import '../../data/security_service.dart';
 
 class NoteSecurityModal extends StatefulWidget {
   final String noteTitle;
@@ -41,6 +42,7 @@ class _NoteSecurityModalState extends State<NoteSecurityModal> with SingleTicker
   late Animation<double> _pulseAnim;
   bool _isError = false;
   String _errorMessage = '';
+  bool _isAuthenticating = false;
 
   @override
   void initState() {
@@ -61,9 +63,10 @@ class _NoteSecurityModalState extends State<NoteSecurityModal> with SingleTicker
     super.dispose();
   }
 
-  void _verifyPin(String input) {
-    // Default PIN: 1234 or any 4-digit sequence
-    if (input == '1234' || input.length == 4) {
+  Future<void> _verifyPin(String input) async {
+    final isValid = await SecurityService.verifyPin(input);
+    if (!mounted) return;
+    if (isValid) {
       TactileFeedback.success();
       Navigator.pop(context);
       widget.onAuthenticated();
@@ -77,15 +80,78 @@ class _NoteSecurityModalState extends State<NoteSecurityModal> with SingleTicker
     }
   }
 
-  void _triggerBiometric() {
+  Future<void> _triggerBiometric() async {
+    if (_isAuthenticating) return;
     TactileFeedback.medium();
-    // Simulate instantaneous biometric sensor matching with haptic response
-    Future.delayed(const Duration(milliseconds: 220), () {
-      if (!mounted) return;
+    setState(() {
+      _isAuthenticating = true;
+      _isError = false;
+    });
+
+    final success = await SecurityService.authenticateBiometrics();
+    if (!mounted) return;
+    setState(() => _isAuthenticating = false);
+
+    if (success) {
       TactileFeedback.success();
       Navigator.pop(context);
       widget.onAuthenticated();
-    });
+    } else {
+      TactileFeedback.heavy();
+      setState(() {
+        _isError = true;
+        _errorMessage = 'Biometric verification failed';
+      });
+    }
+  }
+
+  void _showChangePinDialog() {
+    final oldCtrl = TextEditingController();
+    final newCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Change Security PIN'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: oldCtrl,
+              keyboardType: TextInputType.number,
+              maxLength: 4,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'Current PIN', hintText: 'Default 1234'),
+            ),
+            TextField(
+              controller: newCtrl,
+              keyboardType: TextInputType.number,
+              maxLength: 4,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'New 4-Digit PIN'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () async {
+              if (await SecurityService.verifyPin(oldCtrl.text) && newCtrl.text.length == 4) {
+                await SecurityService.setPin(newCtrl.text);
+                if (ctx.mounted) Navigator.pop(ctx);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PIN updated successfully')));
+                }
+              } else {
+                if (ctx.mounted) {
+                  ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Invalid current PIN or format')));
+                }
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -96,11 +162,7 @@ class _NoteSecurityModalState extends State<NoteSecurityModal> with SingleTicker
     final primary = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
 
     return Container(
-      margin: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-      ),
+      margin: EdgeInsets.only(left: 16, right: 16, bottom: MediaQuery.of(context).viewInsets.bottom + 20),
       child: GlassContainer(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 26),
         borderRadius: BorderRadius.circular(24),
@@ -111,10 +173,7 @@ class _NoteSecurityModalState extends State<NoteSecurityModal> with SingleTicker
               width: 36,
               height: 4,
               margin: const EdgeInsets.only(bottom: 20),
-              decoration: BoxDecoration(
-                color: onSurfaceVar.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
+              decoration: BoxDecoration(color: onSurfaceVar.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(2)),
             ),
             ScaleTransition(
               scale: _pulseAnim,
@@ -126,10 +185,7 @@ class _NoteSecurityModalState extends State<NoteSecurityModal> with SingleTicker
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
-                      colors: [
-                        primary.withValues(alpha: 0.25),
-                        primary.withValues(alpha: 0.08),
-                      ],
+                      colors: [primary.withValues(alpha: 0.25), primary.withValues(alpha: 0.08)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -140,10 +196,7 @@ class _NoteSecurityModalState extends State<NoteSecurityModal> with SingleTicker
               ),
             ),
             const SizedBox(height: 16),
-            Text(
-              'Biometric Security',
-              style: AppTypography.title(onSurface, size: 18, weight: FontWeight.bold),
-            ),
+            Text('Security Lock', style: AppTypography.title(onSurface, size: 18, weight: FontWeight.bold)),
             const SizedBox(height: 6),
             Text(
               widget.noteTitle.isEmpty ? 'Private Note' : widget.noteTitle,
@@ -152,13 +205,8 @@ class _NoteSecurityModalState extends State<NoteSecurityModal> with SingleTicker
               style: AppTypography.body(primary, size: 13, weight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
-            Text(
-              'Touch fingerprint sensor or enter your 4-digit PIN',
-              textAlign: TextAlign.center,
-              style: AppTypography.caption(onSurfaceVar, size: 11),
-            ),
+            Text('Touch sensor or enter your 4-digit PIN', textAlign: TextAlign.center, style: AppTypography.caption(onSurfaceVar, size: 11)),
             const SizedBox(height: 20),
-            // PIN Input
             SizedBox(
               width: 180,
               child: TextField(
@@ -172,21 +220,11 @@ class _NoteSecurityModalState extends State<NoteSecurityModal> with SingleTicker
                 decoration: InputDecoration(
                   counterText: '',
                   hintText: '••••',
-                  hintStyle: TextStyle(
-                    fontSize: 22,
-                    letterSpacing: 12,
-                    color: onSurfaceVar.withValues(alpha: 0.4),
-                  ),
+                  hintStyle: TextStyle(fontSize: 22, letterSpacing: 12, color: onSurfaceVar.withValues(alpha: 0.4)),
                   filled: true,
                   fillColor: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.04),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: onSurfaceVar.withValues(alpha: 0.2)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: primary, width: 1.5),
-                  ),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: onSurfaceVar.withValues(alpha: 0.2))),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: primary, width: 1.5)),
                 ),
                 onChanged: (val) {
                   if (val.length == 4) _verifyPin(val);
@@ -195,20 +233,24 @@ class _NoteSecurityModalState extends State<NoteSecurityModal> with SingleTicker
             ),
             if (_isError) ...[
               const SizedBox(height: 8),
-              Text(
-                _errorMessage,
-                style: const TextStyle(color: Colors.redAccent, fontSize: 11),
-              ),
+              Text(_errorMessage, style: const TextStyle(color: Colors.redAccent, fontSize: 11)),
             ],
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 TextButton.icon(
                   onPressed: _triggerBiometric,
                   icon: const Icon(Icons.fingerprint, size: 18),
-                  label: const Text('Touch to Unlock with Biometrics'),
+                  label: const Text('Unlock with Biometrics'),
                   style: TextButton.styleFrom(foregroundColor: primary),
+                ),
+                const SizedBox(width: 8),
+                TextButton.icon(
+                  onPressed: _showChangePinDialog,
+                  icon: const Icon(Icons.password, size: 16),
+                  label: const Text('Change PIN'),
+                  style: TextButton.styleFrom(foregroundColor: onSurfaceVar),
                 ),
               ],
             ),
