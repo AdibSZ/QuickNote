@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:quicknote_notes/quicknote_notes.dart';
 import '../../../../core/theme/text_direction_helper.dart';
 import '../../../editor/presentation/widgets/blocks/doodle_canvas_modal.dart';
+import 'zen_audio_memo_widget.dart';
 
 class ZenBlockBuilder {
   static Widget buildBlock(NoteBlock block, Color fg, double fontSize) {
@@ -142,29 +143,7 @@ class ZenBlockBuilder {
           ),
         );
       case BlockType.audioMemo:
-        return Container(
-          margin: const EdgeInsets.only(bottom: 14),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: fg.withValues(alpha: 0.06),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            textDirection: dir,
-            children: [
-              Icon(Icons.mic, color: fg.withValues(alpha: 0.7), size: 20),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  content.isEmpty ? 'Audio Memo' : content,
-                  textDirection: dir,
-                  textAlign: align,
-                  style: TextStyle(color: fg, fontSize: fontSize, fontWeight: FontWeight.w500),
-                ),
-              ),
-            ],
-          ),
-        );
+        return ZenAudioMemoWidget(block: block, fg: fg, fontSize: fontSize);
       case BlockType.divider:
         return Divider(color: fg.withValues(alpha: 0.2), height: 24, thickness: 1);
       default:
@@ -178,8 +157,8 @@ class ZenBlockBuilder {
 
   static Widget _buildZenImage(String path) {
     if (path.startsWith('http://') || path.startsWith('https://') || kIsWeb) {
-      return Image.network(path, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.broken_image));
+      return Image.network(path, fit: BoxFit.cover, errorBuilder: (ctx, err, trace) => const Icon(Icons.broken_image));
     }
-    return Image.file(File(path), fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.broken_image));
+    return Image.file(File(path), fit: BoxFit.cover, errorBuilder: (ctx, err, trace) => const Icon(Icons.broken_image));
   }
 }

@@ -251,11 +251,9 @@ class NoteEditorCubit extends Cubit<NoteEditorState> {
 
     _recordHistory();
     final updated = List<NoteBlock>.from(state.blocks);
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
     final item = updated.removeAt(oldIndex);
-    updated.insert(newIndex, item);
+    final targetIndex = newIndex.clamp(0, updated.length);
+    updated.insert(targetIndex, item);
 
     emit(state.copyWith(blocks: updated));
     _autoSave();
