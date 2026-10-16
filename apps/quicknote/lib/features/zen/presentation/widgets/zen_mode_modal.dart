@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quicknote_notes/quicknote_notes.dart';
 import '../../../../core/theme/text_direction_helper.dart';
 import '../../../../core/ui_kit/tactile_feedback.dart';
+import 'zen_block_builder.dart';
 
 enum ZenTheme { oled, sepia, forest, paper }
 
@@ -135,11 +136,12 @@ class _ZenModeModalState extends State<ZenModeModal> {
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
                       widget.note.title.isEmpty ? 'Untitled Note' : widget.note.title,
-                      textDirection: getTextDirection(widget.note.title, defaultIfEmpty: true),
+                      textDirection: isRtlText(widget.note.title) ? TextDirection.rtl : TextDirection.ltr,
+                      textAlign: isRtlText(widget.note.title) ? TextAlign.right : TextAlign.left,
                       style: TextStyle(
                         color: fg,
                         fontSize: _fontSize + 8,
@@ -149,79 +151,7 @@ class _ZenModeModalState extends State<ZenModeModal> {
                     ),
                     const SizedBox(height: 16),
                     ...widget.note.blocks.where((b) => b.type != BlockType.title).map((block) {
-                      final content = block.content;
-                      final isRtl = isRtlText(content);
-                      final dir = isRtl ? TextDirection.rtl : TextDirection.ltr;
-
-                      switch (block.type) {
-                        case BlockType.paragraph:
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 14),
-                            child: Text(
-                              content,
-                              textDirection: dir,
-                              style: TextStyle(color: fg.withValues(alpha: 0.9), fontSize: _fontSize, height: 1.7),
-                            ),
-                          );
-                        case BlockType.heading2:
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 14, bottom: 8),
-                            child: Text(
-                              content,
-                              textDirection: dir,
-                              style: TextStyle(color: fg, fontSize: _fontSize + 4, fontWeight: FontWeight.bold, height: 1.4),
-                            ),
-                          );
-                        case BlockType.checklist:
-                          final checked = block.metadata['isChecked'] == true;
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Icon(
-                                  checked ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-                                  color: checked ? Colors.green : fg.withValues(alpha: 0.4),
-                                  size: _fontSize + 2,
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    content,
-                                    textDirection: dir,
-                                    style: TextStyle(
-                                      color: checked ? fg.withValues(alpha: 0.4) : fg,
-                                      fontSize: _fontSize,
-                                      decoration: checked ? TextDecoration.lineThrough : null,
-                                      height: 1.5,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        case BlockType.quote:
-                        case BlockType.callout:
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 14),
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: fg.withValues(alpha: 0.06),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border(right: BorderSide(color: fg.withValues(alpha: 0.4), width: 3)),
-                            ),
-                            child: Text(
-                              content,
-                              textDirection: dir,
-                              style: TextStyle(color: fg.withValues(alpha: 0.9), fontSize: _fontSize - 1, fontStyle: FontStyle.italic, height: 1.6),
-                            ),
-                          );
-                        default:
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: Text(content, textDirection: dir, style: TextStyle(color: fg, fontSize: _fontSize)),
-                          );
-                      }
+                      return ZenBlockBuilder.buildBlock(block, fg, _fontSize);
                     }),
                   ],
                 ),

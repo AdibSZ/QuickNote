@@ -5,6 +5,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/ui_kit/app_emblem.dart';
 import '../../../../core/ui_kit/glass_container.dart';
 import '../../../../core/ui_kit/glass_icon_button.dart';
+import '../../../../core/ui_kit/tactile_feedback.dart';
 import 'editor_more_menu_sheet.dart';
 
 class EditorHeader extends StatelessWidget {
@@ -162,31 +163,42 @@ class EditorHeader extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? AppColors.darkSurfaceContainerHigh.withValues(alpha: 0.6)
-                      : AppColors.lightSurfaceContainerHigh.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(9999),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: isSaving ? Colors.amberAccent : primary,
-                        shape: BoxShape.circle,
+              InkWell(
+                onTap: () {
+                  TactileFeedback.light();
+                  onZenMode?.call();
+                },
+                borderRadius: BorderRadius.circular(9999),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? AppColors.darkSurfaceContainerHigh.withValues(alpha: 0.8)
+                        : AppColors.lightSurfaceContainerHigh.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(9999),
+                    border: Border.all(
+                      color: primary.withValues(alpha: 0.25),
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.self_improvement_rounded,
+                        size: 14,
+                        color: primary,
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      isSaving ? '...' : TextRegistry.get(TextKey.savedToDevice),
-                      style: AppTypography.caption(onSurfaceVar, size: 10),
-                    ),
-                  ],
+                      const SizedBox(width: 4),
+                      Text(
+                        'Zen',
+                        style: AppTypography.caption(onSurface, size: 11).copyWith(
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

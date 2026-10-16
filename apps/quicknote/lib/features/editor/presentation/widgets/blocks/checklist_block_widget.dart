@@ -134,6 +134,7 @@ class _ChecklistBlockWidgetState extends State<ChecklistBlockWidget> {
 
     final textFieldWidget = Expanded(
       child: TextField(
+        key: ValueKey('checklist_field_${widget.block.id}'),
         controller: _controller,
         focusNode: _focusNode,
         onChanged: _handleChanged,
@@ -171,22 +172,15 @@ class _ChecklistBlockWidgetState extends State<ChecklistBlockWidget> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
+        textDirection: _isRtl ? TextDirection.rtl : TextDirection.ltr,
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: _isRtl
-            ? [
-                deleteButton,
-                const SizedBox(width: 8),
-                textFieldWidget,
-                const SizedBox(width: 10),
-                checkboxWidget,
-              ]
-            : [
-                checkboxWidget,
-                const SizedBox(width: 10),
-                textFieldWidget,
-                const SizedBox(width: 8),
-                deleteButton,
-              ],
+        children: [
+          checkboxWidget,
+          const SizedBox(width: 10),
+          textFieldWidget,
+          const SizedBox(width: 8),
+          deleteButton,
+        ],
       ),
     );
   }

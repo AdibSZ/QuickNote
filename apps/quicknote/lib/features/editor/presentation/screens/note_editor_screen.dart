@@ -133,7 +133,9 @@ class NoteEditorScreen extends StatelessWidget {
                         onReorderStart: (_) => TactileFeedback.medium(),
                         onReorderItem: (oldIndex, newIndex) {
                           TactileFeedback.heavy();
-                          cubit.reorderBlocks(oldIndex, newIndex);
+                          final titleOffset = state.blocks.indexWhere((b) => b.type != BlockType.title);
+                          final offset = titleOffset == -1 ? 0 : titleOffset;
+                          cubit.reorderBlocks(oldIndex + offset, newIndex + offset);
                         },
                         proxyDecorator: (child, index, animation) {
                           return AnimatedBuilder(

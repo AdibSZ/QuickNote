@@ -170,10 +170,17 @@ class _ResponsiveHomeScreenState extends State<ResponsiveHomeScreen> {
 
   Widget _buildMobileLayout(BuildContext context, NotesDirectoryState state) {
     final isEditor = _activeNote != null;
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 240),
-      switchInCurve: Curves.easeOutCubic,
-      switchOutCurve: Curves.easeInCubic,
+    return PopScope(
+      canPop: !isEditor,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && isEditor) {
+          _handleBack();
+        }
+      },
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 240),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
       transitionBuilder: (child, anim) {
         final isToEditor = child.key.toString().contains('editor');
         final offset = Tween<Offset>(
@@ -202,6 +209,7 @@ class _ResponsiveHomeScreenState extends State<ResponsiveHomeScreen> {
                 ),
               ),
             ),
+      ),
     );
   }
 
